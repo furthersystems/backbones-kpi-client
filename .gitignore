@@ -1,0 +1,40 @@
+# local ignore files
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# unity
+Builds/*.unitypackage
+Builds/*.log
+Library/
+Logs/
+obj/
+Temp/
+Project.userprefs
+Assembly-CSharp.csproj
+Assembly-CSharp.pidb
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp-Editor.pidb
+Assembly-CSharp-Editor-vs.csproj
+Assembly-CSharp-firstpass.csproj
+Assembly-CSharp-firstpass.pidb
+Assembly-CSharp-firstpass-vs.csproj
+Assembly-CSharp-vs.csproj
+Assembly-UnityScript-firstpass.pidb
+Assembly-UnityScript-firstpass.unityproj
+Assembly-UnityScript-firstpass-vs.unityproj
+Project.suo
+PlayMode.csproj
+EditMode.csproj
+Tests.csproj
+openrelay-cdk.sln
+openrelay-cdk-unity.sln
+
+# visual studio
+Debug/
+Release/
+.vs/
+*.exe
+*.pdb
+*.cache
