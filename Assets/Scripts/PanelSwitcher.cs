@@ -26,6 +26,9 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         private Transform vendorManagePanel;
 
+        [SerializeField]
+        private Transform vendorViewPanel;
+
         public IEnumerator SubmitVendorRegist()
         {
             yield return StartCoroutine(webApi.Create("","",""));
@@ -40,14 +43,23 @@ namespace Com.FurtherSystems.vQL.Client
 
         public void SwitchVendorRegist()
         {
-            vendorRegistPanel.gameObject.SetActive(true);
+            //vendorRegistPanel.gameObject.SetActive(true);
             vendorManagePanel.gameObject.SetActive(false);
+            vendorViewPanel.gameObject.SetActive(false);
         }
 
         public void SwitchVendorManage()
         {
             vendorManagePanel.gameObject.SetActive(true);
-            vendorRegistPanel.gameObject.SetActive(false);
+            //vendorRegistPanel.gameObject.SetActive(false);
+            vendorViewPanel.gameObject.SetActive(false);
+        }
+
+        public void SwitchVendorView()
+        {
+            vendorManagePanel.gameObject.SetActive(false);
+            //vendorRegistPanel.gameObject.SetActive(false);
+            vendorViewPanel.gameObject.SetActive(true);
         }
     }
 }
