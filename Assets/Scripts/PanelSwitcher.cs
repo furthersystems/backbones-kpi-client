@@ -19,15 +19,20 @@ namespace Com.FurtherSystems.vQL.Client
     {
         [SerializeField]
         private WebAPIClient webApi;
-
+        [SerializeField]
+        private Transform registPanel;
+        [SerializeField]
+        private Transform mainPanel;
         [SerializeField]
         private Transform vendorRegistPanel;
-
         [SerializeField]
         private Transform vendorManagePanel;
-
         [SerializeField]
-        private Transform vendorViewPanel;
+        private Transform vendorMainPanel;
+        [SerializeField]
+        private Transform searchDialog;
+        [SerializeField]
+        private Transform loadingDialog;
 
         public IEnumerator SubmitVendorRegist()
         {
@@ -41,25 +46,57 @@ namespace Com.FurtherSystems.vQL.Client
             }
         }
 
+        public void SwitchRegist()
+        {
+            AllDeactive();
+            registPanel.gameObject.SetActive(true);
+        }
+
+        public void SwitchMain()
+        {
+            AllDeactive();
+            mainPanel.gameObject.SetActive(true);
+        }
+
         public void SwitchVendorRegist()
         {
-            //vendorRegistPanel.gameObject.SetActive(true);
-            vendorManagePanel.gameObject.SetActive(false);
-            vendorViewPanel.gameObject.SetActive(false);
+            AllDeactive();
+            vendorRegistPanel.gameObject.SetActive(true);
         }
 
         public void SwitchVendorManage()
         {
+            AllDeactive();
             vendorManagePanel.gameObject.SetActive(true);
-            //vendorRegistPanel.gameObject.SetActive(false);
-            vendorViewPanel.gameObject.SetActive(false);
         }
 
-        public void SwitchVendorView()
+        public void SwitchVendorMain()
         {
+            AllDeactive();
+            vendorMainPanel.gameObject.SetActive(true);
+        }
+
+        public void SwitchSearchDialog()
+        {
+            AllDeactive();
+            searchDialog.gameObject.SetActive(true);
+        }
+
+        public void SwitchLoadingDialog()
+        {
+            AllDeactive();
+            loadingDialog.gameObject.SetActive(true);
+        }
+
+        private void AllDeactive()
+        {
+            registPanel.gameObject.SetActive(false);
+            mainPanel.gameObject.SetActive(false);
+            vendorRegistPanel.gameObject.SetActive(false);
             vendorManagePanel.gameObject.SetActive(false);
-            //vendorRegistPanel.gameObject.SetActive(false);
-            vendorViewPanel.gameObject.SetActive(true);
+            vendorMainPanel.gameObject.SetActive(false);
+            searchDialog.gameObject.SetActive(false);
+            loadingDialog.gameObject.SetActive(false);
         }
     }
 }
