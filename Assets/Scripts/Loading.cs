@@ -43,11 +43,11 @@ public class Loading : MonoBehaviour
 
     void Start()
     {
-        bar1fill = 0f;
-        bar2fill = 0.25f;
+        bar1fill = 1f;
+        bar2fill = 0.75f;
         bar3fill = 0.5f;
-        bar4fill = 0.75f;
-        bar5fill = 1f;
+        bar4fill = 0.25f;
+        bar5fill = 0f;
         bar1.fillAmount = bar1fill;
         bar2.fillAmount = bar2fill;
         bar3.fillAmount = bar3fill;
