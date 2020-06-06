@@ -12,9 +12,9 @@
 //------------------------------------------------------------------------------
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Android;
-using UnityEngine.iOS;
-using UnityEngine.Windows;
+//using UnityEngine.Android;
+//using UnityEngine.iOS;
+//using UnityEngine.Windows;
 using UnityEngine.UI;
 using ZXing;
 
@@ -61,22 +61,22 @@ public class QRScanCamera : MonoBehaviour
 
     public void StartScan()
     {
-        Permission.RequestUserPermission(Permission.Camera);
+        //Permission.RequestUserPermission(Permission.Camera);
         isAbort = false;
         status = ScanStatus.Initialize;
     }
 
     void InitializeScan()
     {
-        if (Permission.HasUserAuthorizedPermission(Permission.Camera))
-        {
+        //if (Permission.HasUserAuthorizedPermission(Permission.Camera))
+        //{
             var rectTransform = GetComponent<RectTransform>();
             webCamTexture = new WebCamTexture((int)rectTransform.rect.width, (int)rectTransform.rect.height);
             webCamTexture.Play();
             rawImage.texture = webCamTexture;
             isAbort = false;
             status = ScanStatus.Scanning;
-        }
+        //}
         // TODO check timeout here.
         // TODO check abort here.
     }
