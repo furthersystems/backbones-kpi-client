@@ -19,7 +19,7 @@ namespace Com.FurtherSystems.vQL.Client
 {
     class BouncyCastleWrapper
     {
-        private PaddedBufferedBlockCipher cipher;
+        PaddedBufferedBlockCipher cipher;
         public BouncyCastleWrapper(IBlockCipher cipherType, IBlockCipherPadding padding = null)
         {
             if (padding != null)
@@ -42,7 +42,7 @@ namespace Com.FurtherSystems.vQL.Client
             return Crypto(false, cipher, UTF8Encoding.UTF8.GetBytes(key));
         }
 
-        private byte[] Crypto(bool useEncrypt, byte[] data, byte[] key)
+        byte[] Crypto(bool useEncrypt, byte[] data, byte[] key)
         {
             cipher.Init(useEncrypt, new ParametersWithIV(new KeyParameter(key), key));
             return cipher.DoFinal(data);

@@ -10,93 +10,101 @@
 // Screen Panel Switcher 
 // </summary>
 //------------------------------------------------------------------------------
-using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Com.FurtherSystems.vQL.Client
 {
     public class PanelSwitcher : MonoBehaviour
     {
         [SerializeField]
-        private WebAPIClient webApi;
+        WebAPIClient webApi;
         [SerializeField]
-        private Transform registPanel;
+        Transform registPanel;
         [SerializeField]
-        private Transform mainPanel;
+        Transform mainPanel;
         [SerializeField]
-        private Transform vendorRegistPanel;
+        Transform vendorRegistPanel;
         [SerializeField]
-        private Transform vendorManagePanel;
+        Transform vendorManagePanel;
         [SerializeField]
-        private Transform vendorMainPanel;
+        Transform vendorMainPanel;
         [SerializeField]
-        private Transform searchDialog;
+        Transform searchDialog;
         [SerializeField]
-        private Transform loadingDialog;
+        Transform loadingDialog;
+        [SerializeField]
+        Transform errorDialog;
+        [SerializeField]
+        Transform fadePanel;
 
-        public IEnumerator SubmitVendorRegist()
-        {
-            yield return StartCoroutine(webApi.Create("","",""));
-            if ( webApi.CreateResult) {
-                SwitchVendorManage();
-            }
-            else
-            {
-                //failed dialog
-            }
-        }
-
-        public void SwitchRegist()
+        public void FadeRegist()
         {
             AllDeactive();
             registPanel.gameObject.SetActive(true);
         }
 
-        public void SwitchMain()
+        public void FadeMain()
         {
             AllDeactive();
             mainPanel.gameObject.SetActive(true);
         }
 
-        public void SwitchVendorRegist()
+        public void FadeVendorRegist()
         {
             AllDeactive();
             vendorRegistPanel.gameObject.SetActive(true);
         }
 
-        public void SwitchVendorManage()
+        public void FadeVendorManage()
         {
             AllDeactive();
             vendorManagePanel.gameObject.SetActive(true);
         }
 
-        public void SwitchVendorMain()
+        public void FadeVendorMain()
         {
             AllDeactive();
             vendorMainPanel.gameObject.SetActive(true);
         }
 
-        public void SwitchSearchDialog()
+        public void PopSearchDialog()
         {
-            AllDeactive();
             searchDialog.gameObject.SetActive(true);
         }
 
-        public void SwitchLoadingDialog()
+        public void PopLoadingDialog()
         {
-            AllDeactive();
             loadingDialog.gameObject.SetActive(true);
         }
 
-        private void AllDeactive()
+        public void PopErrorDialog()
+        {
+            loadingDialog.gameObject.SetActive(true);
+        }
+
+        public void DepopSearchDialog()
+        {
+            searchDialog.gameObject.SetActive(false);
+        }
+
+        public void DepopLoadingDialog()
+        {
+            loadingDialog.gameObject.SetActive(false);
+        }
+
+        public void DepopErrorDialog()
+        {
+            loadingDialog.gameObject.SetActive(false);
+        }
+
+        void AllDeactive()
         {
             registPanel.gameObject.SetActive(false);
             mainPanel.gameObject.SetActive(false);
             vendorRegistPanel.gameObject.SetActive(false);
             vendorManagePanel.gameObject.SetActive(false);
             vendorMainPanel.gameObject.SetActive(false);
-            searchDialog.gameObject.SetActive(false);
-            loadingDialog.gameObject.SetActive(false);
         }
     }
 }

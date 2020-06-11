@@ -18,8 +18,9 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-namespace Com.FurtherSystems.vQL.Client {
 
+namespace Com.FurtherSystems.vQL.Client
+{
     public class WebAPIClient : MonoBehaviour
     {
         const string Url = "http://192.168.1.30:7000";
@@ -28,16 +29,35 @@ namespace Com.FurtherSystems.vQL.Client {
 
         const string traditionalKey = "KIWIKIWIKIWIKIWIKIWIKIWIKIWIKIWI";
 
+        const int RetryCount = 3;
+        const float Timeout = 15f;
+
         [Serializable]
         struct ReqBodyCreate
         {
-            public string UnsafeAuthId;
+            public string Seed;
+            public string Name;
+            public string Caption;
             public string Uuid;
-            public string PlatformInfo;
             public long Ticks;
         }
 
-        private string Encode(object obj)
+        public static string GetPlatform()
+        {
+#if UNITY_STANDALONE_WIN
+            return "Windows";
+#elif UNITY_STANDALONE_LINUX
+            return "Linux";
+#elif UNITY_STANDALONE_OSX
+            return "MacOSX";
+#elif UNITY_IOS
+            return "iOS";
+#elif UNITY_ANDROID
+            return "Android";
+#endif
+        }
+
+        string Encode(object obj)
         {
             var postDataJsonBytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
             //Debug.Log("send json bytes: " + BitConverter.ToString(postDataJsonBytes));
@@ -48,18 +68,52 @@ namespace Com.FurtherSystems.vQL.Client {
         }
 
         public bool CreateResult { get; set; }
-        public IEnumerator Create(string name, string caption, string oauth)
+        public IEnumerator Create(string name, string caption, string seed, string uuid, long ticks)
         {
             Debug.Log("Create start");
             ReqBodyCreate reqBody;
-            reqBody.UnsafeAuthId = "aaa";
-            reqBody.Uuid = SystemInfo.deviceUniqueIdentifier;
-            reqBody.PlatformInfo = SystemInfo.operatingSystem;
-            reqBody.Ticks = ToUnixTime(DateTime.UtcNow);
+            reqBody.Seed = seed;
+            reqBody.Name = name;
+            reqBody.Caption = caption;
+            reqBody.Uuid = uuid;
+            reqBody.Ticks = ticks;
 
-            UnityWebRequest req = UnityWebRequest.Post(Url + "/vendor/new", Encode(reqBody));
-            req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
-            yield return req.SendWebRequest();
+            Debug.Log("Create req send");
+            UnityWebRequest req;
+            var counter = 1;
+            do
+            {
+                var timer = 0f;
+                req = UnityWebRequest.Post(Url + "/vendor/new", Encode(reqBody));
+                req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
+                req.SetRequestHeader("Platform", GetPlatform());
+                req.SendWebRequest();
+                while (true)
+                {
+                    if (req.isDone) break;
+                    else if (timer > Timeout) break;
+
+                    yield return new WaitForSeconds(0.5f);
+                    timer += 0.5f;
+                }
+
+                if (counter < RetryCount)
+                {
+                    counter++;
+                    Debug.Log("Create req send retry " + counter.ToString());
+                    continue;
+                }
+
+                break;
+            } while (true);
+
+            if (!req.isDone || counter >= RetryCount)
+            {
+                Debug.Log("Create req retry over failed");
+                CreateResult = false;
+                yield break;
+            }
+
             if (req.isNetworkError)
             {
                 Debug.LogError(req.error);
@@ -73,17 +127,9 @@ namespace Com.FurtherSystems.vQL.Client {
                 CreateResult = false;
                 yield break;
             }
-            
-            Debug.Log("get version end" + res);
-            CreateResult = true;
-        }
 
-        public static DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        public static long ToUnixTime(DateTime targetTime)
-        {
-            targetTime = targetTime.ToUniversalTime();
-            TimeSpan elapsedTime = targetTime - UNIX_EPOCH;
-            return (long)elapsedTime.TotalSeconds;
+            Debug.Log("Create end" + res);
+            CreateResult = true;
         }
     }
 }
