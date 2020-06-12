@@ -51,8 +51,8 @@ namespace Com.FurtherSystems.vQL.Client
         if (Input.touchCount > 0)
         {
             var touch = Input.GetTouch(index).position;
-            position.x = touch.position.x;
-            position.y = touch.position.y;
+            position.x = touch.x;
+            position.y = touch.y;
         }
 #endif
             return position;
