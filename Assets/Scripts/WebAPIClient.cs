@@ -21,6 +21,14 @@ using UnityEngine.Networking;
 
 namespace Com.FurtherSystems.vQL.Client
 {
+    public enum IdentiferType : byte
+    {
+        None = 0,
+        GSuite = 1,
+        Twitter = 2,
+        Facebook = 3,
+        LINE = 4,
+    }
     public class WebAPIClient : MonoBehaviour
     {
         const string Url = "http://192.168.1.30:7000";
@@ -29,16 +37,19 @@ namespace Com.FurtherSystems.vQL.Client
 
         const string traditionalKey = "KIWIKIWIKIWIKIWIKIWIKIWIKIWIKIWI";
 
+        private static DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
         const int RetryCount = 3;
         const float Timeout = 15f;
 
         [Serializable]
         struct ReqBodyCreate
         {
+            public byte IdentifierType;
+            public string Identifier;
             public string Seed;
             public string Name;
             public string Caption;
-            public string Uuid;
             public long Ticks;
         }
 
@@ -57,6 +68,18 @@ namespace Com.FurtherSystems.vQL.Client
 #endif
         }
 
+        public static long GetTimestamp()
+        {
+            return DateTime.UtcNow.Ticks;
+        }
+
+        public static long GetUnixTime()
+        {
+            var targetTime = DateTime.UtcNow.ToUniversalTime();
+            TimeSpan elapsedTime = targetTime - UNIX_EPOCH;
+            return (long)elapsedTime.TotalSeconds;
+        }
+
         string Encode(object obj)
         {
             var postDataJsonBytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
@@ -68,14 +91,16 @@ namespace Com.FurtherSystems.vQL.Client
         }
 
         public bool CreateResult { get; set; }
-        public IEnumerator Create(string name, string caption, string seed, string uuid, long ticks)
+        public string CreateResultData { get; private set; }
+        public IEnumerator Create(string name, string caption, string seed, string ident, long ticks, long nonce)
         {
             Debug.Log("Create start");
             ReqBodyCreate reqBody;
+            reqBody.IdentifierType = (byte) IdentiferType.None;
+            reqBody.Identifier = ident;
             reqBody.Seed = seed;
             reqBody.Name = name;
             reqBody.Caption = caption;
-            reqBody.Uuid = uuid;
             reqBody.Ticks = ticks;
 
             Debug.Log("Create req send");
@@ -87,6 +112,7 @@ namespace Com.FurtherSystems.vQL.Client
                 req = UnityWebRequest.Post(Url + "/vendor/new", Encode(reqBody));
                 req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
                 req.SetRequestHeader("Platform", GetPlatform());
+                req.SetRequestHeader("Nonce", nonce.ToString());
                 req.SendWebRequest();
                 while (true)
                 {
@@ -96,6 +122,8 @@ namespace Com.FurtherSystems.vQL.Client
                     yield return new WaitForSeconds(0.5f);
                     timer += 0.5f;
                 }
+
+                if (req.isDone) break;
 
                 if (counter < RetryCount)
                 {
@@ -120,7 +148,7 @@ namespace Com.FurtherSystems.vQL.Client
                 CreateResult = false;
                 yield break;
             }
-            var res = req.downloadHandler.text;
+            CreateResultData = req.downloadHandler.text;
             if (req.responseCode != 200)
             {
                 Debug.Log("http status code:" + req.responseCode);
@@ -128,7 +156,7 @@ namespace Com.FurtherSystems.vQL.Client
                 yield break;
             }
 
-            Debug.Log("Create end" + res);
+            Debug.Log("Create end" + CreateResultData);
             CreateResult = true;
         }
     }

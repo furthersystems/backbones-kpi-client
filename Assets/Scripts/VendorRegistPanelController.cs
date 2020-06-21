@@ -34,8 +34,6 @@ namespace Com.FurtherSystems.vQL.Client
 
         PanelSwitcher panelSwitcher;
 
-        DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
@@ -64,16 +62,17 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator SubmitVendorRegist()
         {
             panelSwitcher.PopLoadingDialog();
-            // TODO check validate
-            var ticks = ToUnixTime(DateTime.UtcNow);
-            var savedSeed = GetSeed(GetUuid(), WebAPIClient.GetPlatform(), ticks);
+            var ticks = WebAPIClient.GetUnixTime();
+            var nonce = WebAPIClient.GetTimestamp();
+            var savedSeed = GetSeed(GetIdentifier(), WebAPIClient.GetPlatform(), ticks);
             Debug.Log(savedSeed);
             var seed = savedSeed.Split(',')[0];
             long originTicks = 0;
             long.TryParse(savedSeed.Split(',')[1], out originTicks);
-            yield return StartCoroutine(webApi.Create(RegistName.text, RegistCaption.text, seed, GetUuid(), originTicks));
+            yield return StartCoroutine(webApi.Create(RegistName.text, RegistCaption.text, AddNonce(seed,nonce), GetIdentifier(), originTicks, nonce));
             if (webApi.CreateResult)
             {
+                // TODO check validate
                 panelSwitcher.FadeVendorManage();
                 panelSwitcher.DepopLoadingDialog();
             }
@@ -91,20 +90,27 @@ namespace Com.FurtherSystems.vQL.Client
             var keyBytes = encode.GetBytes(key);
             var sha = new HMACSHA256(keyBytes);
             var hashBytes = sha.ComputeHash(planeBytes);
-            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+            return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
         }
 
-        string GetSeed(string uuid, string platform, long ticks)
+        string GetSeed(string ident, string platform, long ticks)
         {
             Debug.Log(Application.persistentDataPath);
             var seed = LoadSeed(Application.persistentDataPath, FILE);
             if (seed.Equals(string.Empty))
             {
-                seed = GenerateHash(uuid + platform + ticks.ToString(), MAGIC_KEY) + "," + ticks.ToString();
+                Debug.Log(ident + " " + platform + " " + ticks.ToString() + "," + MAGIC_KEY);
+                seed = GenerateHash(ident + platform + ticks.ToString(), MAGIC_KEY) + "," + ticks.ToString();
                 SaveSeed(Application.persistentDataPath, FILE, seed);
             }
 
             return seed;
+        }
+
+        string AddNonce(string seed, long nonce)
+        {
+            Debug.Log(seed + " " + nonce.ToString() + "," + MAGIC_KEY);
+            return GenerateHash(seed + nonce.ToString(), MAGIC_KEY);
         }
 
         void SaveSeed(string path, string file, string data)
@@ -133,16 +139,9 @@ namespace Com.FurtherSystems.vQL.Client
             return str;
         }
 
-        string GetUuid()
+        string GetIdentifier()
         {
             return GenerateHash(SystemInfo.deviceUniqueIdentifier, MAGIC_KEY);
-        }
-
-        long ToUnixTime(DateTime targetTime)
-        {
-            targetTime = targetTime.ToUniversalTime();
-            TimeSpan elapsedTime = targetTime - UNIX_EPOCH;
-            return (long)elapsedTime.TotalSeconds;
         }
     }
 }

@@ -10,6 +10,7 @@
 // Screen Panel Switcher 
 // </summary>
 //------------------------------------------------------------------------------
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,6 +38,23 @@ namespace Com.FurtherSystems.vQL.Client
         Transform errorDialog;
         [SerializeField]
         Transform fadePanel;
+
+        List<Transform> panels = new List<Transform>();
+
+        void Start()
+        {
+            panels.Add(registPanel);
+            panels.Add(mainPanel);
+            panels.Add(vendorRegistPanel);
+            panels.Add(vendorManagePanel);
+            panels.Add(vendorMainPanel);
+            panels.Add(searchDialog);
+            panels.Add(loadingDialog);
+            panels.Add(errorDialog);
+            panels.Add(fadePanel);
+
+            panels.ForEach(p => p.GetComponent<PanelControllerInterface>().Initialize(this));
+        }
 
         public void FadeRegist()
         {

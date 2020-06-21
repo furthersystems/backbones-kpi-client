@@ -28,6 +28,22 @@ namespace Com.FurtherSystems.vQL.Client
     {
         private static Vector3 TouchPosition = Vector3.zero;
 
+        public static int Count()
+        {
+            var count = 0;
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX || UNITY_STANDALONE_OSX
+            if (Input.GetMouseButtonDown(0)
+                || Input.GetMouseButton(0)
+                || Input.GetMouseButtonUp(0))
+            {
+                count = 1;
+            }
+#elif UNITY_IOS || UNITY_ANDROID
+            count = Input.touchCount;
+#endif
+            return count;
+        }
+
         public static TouchType Get(int index)
         {
             var touch = TouchType.None;

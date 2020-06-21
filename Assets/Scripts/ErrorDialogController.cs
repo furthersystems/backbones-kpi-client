@@ -10,6 +10,7 @@
 // QR Scan Camera Script
 // </summary>
 //------------------------------------------------------------------------------
+using System;
 using UnityEngine;
 
 namespace Com.FurtherSystems.vQL.Client
@@ -17,6 +18,10 @@ namespace Com.FurtherSystems.vQL.Client
     public class ErrorDialogController : MonoBehaviour, PanelControllerInterface
     {
         PanelSwitcher panelSwitcher;
+
+        public string Message { get; set; }
+
+        public string Debug { get; set; }
 
         public void Initialize(PanelSwitcher switcher)
         {
