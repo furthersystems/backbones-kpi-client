@@ -23,6 +23,8 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         Transform registPanel;
         [SerializeField]
+        Transform viewPanel;
+        [SerializeField]
         Transform mainPanel;
         [SerializeField]
         Transform vendorRegistPanel;
@@ -44,6 +46,7 @@ namespace Com.FurtherSystems.vQL.Client
         void Start()
         {
             panels.Add(registPanel);
+            panels.Add(viewPanel);
             panels.Add(mainPanel);
             panels.Add(vendorRegistPanel);
             panels.Add(vendorManagePanel);
@@ -60,6 +63,12 @@ namespace Com.FurtherSystems.vQL.Client
         {
             AllDeactive();
             registPanel.gameObject.SetActive(true);
+        }
+
+        public void FadeView()
+        {
+            AllDeactive();
+            viewPanel.gameObject.SetActive(true);
         }
 
         public void FadeMain()
@@ -119,6 +128,7 @@ namespace Com.FurtherSystems.vQL.Client
         void AllDeactive()
         {
             registPanel.gameObject.SetActive(false);
+            viewPanel.gameObject.SetActive(false);
             mainPanel.gameObject.SetActive(false);
             vendorRegistPanel.gameObject.SetActive(false);
             vendorManagePanel.gameObject.SetActive(false);

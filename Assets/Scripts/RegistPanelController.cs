@@ -20,15 +20,11 @@ using System.IO;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public class VendorRegistPanelController : MonoBehaviour, PanelControllerInterface
+    public class RegistPanelController : MonoBehaviour, PanelControllerInterface
     {
 
         [SerializeField]
         WebAPIClient webApi;
-        [SerializeField]
-        Text RegistName;
-        [SerializeField]
-        Text RegistCaption;
         [SerializeField]
         Identifier identifier;
 
@@ -54,12 +50,12 @@ namespace Com.FurtherSystems.vQL.Client
             gameObject.SetActive(false);
         }
 
-        public void CallRegistVendor()
+        public void CallCreateAccount()
         {
-            StartCoroutine(RegistVendor());
+            StartCoroutine(CreateAccount());
         }
 
-        IEnumerator RegistVendor()
+        IEnumerator CreateAccount()
         {
             panelSwitcher.PopLoadingDialog();
             var ticks = WebAPIClient.GetUnixTime();
@@ -69,12 +65,11 @@ namespace Com.FurtherSystems.vQL.Client
             var seed = savedSeed.Split(',')[0];
             long originTicks = 0;
             long.TryParse(savedSeed.Split(',')[1], out originTicks);
-            yield return StartCoroutine(webApi.RegistVendor(RegistName.text, RegistCaption.text, identifier.AddNonce(seed,nonce), identifier.GetPlatformIdentifier(), originTicks, nonce));
+            yield return StartCoroutine(webApi.CreateAccount(identifier.AddNonce(seed, nonce), identifier.GetPlatformIdentifier(), originTicks, nonce));
             if (webApi.Result)
             {
-                var data = webApi.DequeueResultData<WebAPIClient.ResponseBodyVendorCreate>();
+                var data = webApi.DequeueResultData<WebAPIClient.ResponseBodyCreate>();
                 Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
-                Debug.Log("data.VendorCode: " + data.VendorCode);
                 Debug.Log("data.PrivateKey: " + data.PrivateCode);
                 Debug.Log("data.SessionId: " + data.SessionId);
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
@@ -88,6 +83,55 @@ namespace Com.FurtherSystems.vQL.Client
                 panelSwitcher.PopErrorDialog();
                 panelSwitcher.DepopLoadingDialog();
             }
+        }
+
+        public void CallRegistQueue()
+        {
+            StartCoroutine(RegistQueue());
+        }
+
+        IEnumerator RegistQueue()
+        {
+            panelSwitcher.PopLoadingDialog();
+            var ticks = WebAPIClient.GetUnixTime();
+            var nonce = WebAPIClient.GetTimestamp();
+            var savedSeed = identifier.GetSeed(WebAPIClient.GetPlatform(), ticks);
+            Debug.Log(savedSeed);
+            var seed = savedSeed.Split(',')[0];
+            long originTicks = 0;
+            long.TryParse(savedSeed.Split(',')[1], out originTicks);
+            yield return StartCoroutine(webApi.Regist(identifier.AddNonce(seed,nonce), identifier.GetPlatformIdentifier(), originTicks, nonce));
+            if (webApi.Result)
+            {
+                var data = webApi.DequeueResultData<WebAPIClient.ResponseBodyCreate>();
+
+                // TODO create file update "vendors"
+
+                panelSwitcher.FadeMain();
+                panelSwitcher.DepopLoadingDialog();
+            }
+            else
+            {
+                panelSwitcher.PopErrorDialog();
+                panelSwitcher.DepopLoadingDialog();
+            }
+        }
+
+        public void CallFadeView()
+        {
+            StartCoroutine(FadeView());
+        }
+
+
+        IEnumerator FadeView()
+        {
+            yield return null;
+            panelSwitcher.PopLoadingDialog();
+            yield return null;
+            panelSwitcher.FadeView();
+            yield return null;
+            panelSwitcher.DepopLoadingDialog();
+            yield return null;
         }
     }
 }

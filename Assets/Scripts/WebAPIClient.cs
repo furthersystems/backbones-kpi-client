@@ -14,6 +14,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Paddings;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
@@ -21,7 +22,7 @@ using UnityEngine.Networking;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public enum IdentiferType : byte
+    public enum IdentifierType : byte
     {
         None = 0,
         GSuite = 1,
@@ -31,7 +32,7 @@ namespace Com.FurtherSystems.vQL.Client
     }
     public class WebAPIClient : MonoBehaviour
     {
-        const string Url = "http://192.168.1.30:7000";
+        const string Url = "http://localhost:7000";
         const string UserAgent = "vQLClient Unity";
         const string ClientVersion = "v1.0.0";
 
@@ -43,13 +44,57 @@ namespace Com.FurtherSystems.vQL.Client
         const float Timeout = 15f;
 
         [Serializable]
-        struct ReqBodyCreate
+        public class RequestBodyCreate
         {
+            public RequestBodyCreate()
+            {
+
+            }
+            public byte IdentifierType;
+            public string Identifier;
+            public string Seed;
+            public long Ticks;
+        }
+
+        [Serializable]
+        public class ResponseBodyCreate
+        {
+            public ResponseBodyCreate()
+            {
+
+            }
+            public ResponseCode ResponseCode;
+            public string PrivateCode;
+            public string SessionId;
+            public long Ticks;
+        }
+
+        [Serializable]
+        public class RequestBodyVendorCreate
+        {
+            public RequestBodyVendorCreate()
+            {
+
+            }
             public byte IdentifierType;
             public string Identifier;
             public string Seed;
             public string Name;
             public string Caption;
+            public long Ticks;
+        }
+
+        [Serializable]
+        public class ResponseBodyVendorCreate
+        {
+            public ResponseBodyVendorCreate()
+            {
+
+            }
+            public ResponseCode ResponseCode;
+            public string VendorCode;
+            public string PrivateCode;
+            public string SessionId;
             public long Ticks;
         }
 
@@ -80,7 +125,7 @@ namespace Com.FurtherSystems.vQL.Client
             return (long)elapsedTime.TotalSeconds;
         }
 
-        string Encode(object obj)
+        string Encode(object obj, long iv)
         {
             var postDataJsonBytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
             //Debug.Log("send json bytes: " + BitConverter.ToString(postDataJsonBytes));
@@ -90,18 +135,69 @@ namespace Com.FurtherSystems.vQL.Client
             return Convert.ToBase64String(postDataJsonBytes);
         }
 
-        public bool CreateResult { get; set; }
-        public string CreateResultData { get; private set; }
-        public IEnumerator Create(string name, string caption, string seed, string ident, long ticks, long nonce)
+        public T Decode<T>(string value, long iv)
+        {
+            var base64Decoded = Convert.FromBase64String(value);
+            var json = Encoding.UTF8.GetString(base64Decoded);
+            return JsonUtility.FromJson<T>(json);
+        }
+
+        public bool Result { get; set; }
+
+        private class ResultData
+        {
+            public string Data;
+            public long IV;
+            public ResultData(string data, long iv)
+            {
+                Data = data;
+                IV = iv;
+            }
+        }
+
+        ConcurrentQueue<ResultData> resultQueue = null;
+        public T DequeueResultData<T>()
+        {
+            ResultData result = null;
+            Debug.Log("result data queue count: " + resultQueue.Count.ToString());
+            if (resultQueue.Count > 0)
+            {
+                resultQueue.TryDequeue(out result);
+            }
+            // decode here.
+            return Decode<T>(result.Data, result.IV);
+        }
+
+        private void enqueueResultData(ResultData value)
+        {
+            resultQueue.Enqueue(value);
+        }
+
+        private void clearResultData()
+        {
+            if (resultQueue == null)
+            {
+                resultQueue = new ConcurrentQueue<ResultData>();
+            }
+            ResultData result;
+            while (resultQueue.Count > 0)
+            {
+                resultQueue.TryDequeue(out result);
+            }
+        }
+
+        public IEnumerator CreateAccount(string seed, string ident, long ticks, long nonce)
         {
             Debug.Log("Create start");
-            ReqBodyCreate reqBody;
-            reqBody.IdentifierType = (byte) IdentiferType.None;
-            reqBody.Identifier = ident;
-            reqBody.Seed = seed;
-            reqBody.Name = name;
-            reqBody.Caption = caption;
-            reqBody.Ticks = ticks;
+            clearResultData();
+
+            var reqBody = new RequestBodyCreate
+            {
+                IdentifierType = (byte)IdentifierType.None,
+                Identifier = ident,
+                Seed = seed,
+                Ticks = ticks
+            };
 
             Debug.Log("Create req send");
             UnityWebRequest req;
@@ -109,10 +205,12 @@ namespace Com.FurtherSystems.vQL.Client
             do
             {
                 var timer = 0f;
-                req = UnityWebRequest.Post(Url + "/vendor/new", Encode(reqBody));
+                long ivReq = 0;
+                req = UnityWebRequest.Post(Url + "/queue/new", Encode(reqBody, ivReq));
                 req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
                 req.SetRequestHeader("Platform", GetPlatform());
                 req.SetRequestHeader("Nonce", nonce.ToString());
+                req.SetRequestHeader("IV", ivReq.ToString());
                 req.SendWebRequest();
                 while (true)
                 {
@@ -138,26 +236,107 @@ namespace Com.FurtherSystems.vQL.Client
             if (!req.isDone || counter >= RetryCount)
             {
                 Debug.Log("Create req retry over failed");
-                CreateResult = false;
+                Result = false;
                 yield break;
             }
 
             if (req.isNetworkError)
             {
                 Debug.LogError(req.error);
-                CreateResult = false;
+                Result = false;
                 yield break;
             }
-            CreateResultData = req.downloadHandler.text;
+            long ivRes = 0;
+            enqueueResultData(new ResultData(req.downloadHandler.text, ivRes));
             if (req.responseCode != 200)
             {
                 Debug.Log("http status code:" + req.responseCode);
-                CreateResult = false;
+                Result = false;
                 yield break;
             }
 
-            Debug.Log("Create end" + CreateResultData);
-            CreateResult = true;
+            Debug.Log("Create end" + req.downloadHandler.text);
+            Result = true;
+        }
+
+        public IEnumerator Regist(string seed, string ident, long ticks, long nonce)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        public IEnumerator RegistVendor(string name, string caption, string seed, string ident, long ticks, long nonce)
+        {
+            Debug.Log("Create start");
+            clearResultData();
+
+            var reqBody = new RequestBodyVendorCreate
+            {
+                IdentifierType = (byte)IdentifierType.None,
+                Identifier = ident,
+                Seed = seed,
+                Name = name,
+                Caption = caption,
+                Ticks = ticks
+            };
+
+            Debug.Log("Create req send");
+            UnityWebRequest req;
+            var counter = 1;
+            do
+            {
+                var timer = 0f;
+                long ivReq = 0;
+                req = UnityWebRequest.Post(Url + "/vendor/new", Encode(reqBody, ivReq));
+                req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
+                req.SetRequestHeader("Platform", GetPlatform());
+                req.SetRequestHeader("Nonce", nonce.ToString());
+                req.SetRequestHeader("IV", ivReq.ToString());
+                req.SendWebRequest();
+                while (true)
+                {
+                    if (req.isDone) break;
+                    else if (timer > Timeout) break;
+
+                    yield return new WaitForSeconds(0.5f);
+                    timer += 0.5f;
+                }
+
+                if (req.isDone) break;
+
+                if (counter < RetryCount)
+                {
+                    counter++;
+                    Debug.Log("Create req send retry " + counter.ToString());
+                    continue;
+                }
+
+                break;
+            } while (true);
+
+            if (!req.isDone || counter >= RetryCount)
+            {
+                Debug.Log("Create req retry over failed");
+                Result = false;
+                yield break;
+            }
+
+            if (req.isNetworkError)
+            {
+                Debug.LogError(req.error);
+                Result = false;
+                yield break;
+            }
+            long ivRes = 0;
+            enqueueResultData(new ResultData(req.downloadHandler.text, ivRes));
+            if (req.responseCode != 200)
+            {
+                Debug.Log("http status code:" + req.responseCode);
+                Result = false;
+                yield break;
+            }
+
+            Debug.Log("Create end" + req.downloadHandler.text);
+            Result = true;
         }
     }
 }
