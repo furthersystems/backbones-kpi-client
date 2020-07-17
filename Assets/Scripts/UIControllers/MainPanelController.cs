@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="VendorRegistPanelController.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="MainPanelController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,7 +7,7 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// Vendor Regist Panel Controller
+// Main Panel Controller
 // </summary>
 //------------------------------------------------------------------------------
 using System;
@@ -20,15 +20,21 @@ using System.IO;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public class ViewPanelController : MonoBehaviour, PanelControllerInterface
+    public class MainPanelController : MonoBehaviour, PanelControllerInterface
     {
-
         [SerializeField]
         WebAPIClient webApi;
         [SerializeField]
         Identifier identifier;
+        [SerializeField]
+        GameObject content;
 
         PanelSwitcher panelSwitcher;
+
+        public PanelType GetPanelType()
+        {
+            return PanelType.Main;
+        }
 
         public void Initialize(PanelSwitcher switcher)
         {
@@ -37,30 +43,30 @@ namespace Com.FurtherSystems.vQL.Client
 
         public bool IsShowing()
         {
-            return gameObject.activeSelf;
+            return content.activeSelf;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public void Dismiss()
         {
-            gameObject.SetActive(false);
+            content.SetActive(false);
         }
 
-        public void CallFadeRegist()
+        public void CallFadeView()
         {
-            StartCoroutine(FadeRegist());
+            StartCoroutine(FadeView());
         }
 
-        IEnumerator FadeRegist()
+        IEnumerator FadeView()
         {
             yield return null;
             panelSwitcher.PopLoadingDialog();
             yield return null;
-            panelSwitcher.FadeRegist();
+            panelSwitcher.Fade(PanelType.View);
             yield return null;
             panelSwitcher.DepopLoadingDialog();
             yield return null;

@@ -27,6 +27,8 @@ namespace Com.FurtherSystems.vQL.Client
         Image bar4;
         [SerializeField]
         Image bar5;
+        [SerializeField]
+        GameObject content;
 
         float baseFill;
         bool boundFlag;
@@ -88,6 +90,11 @@ namespace Com.FurtherSystems.vQL.Client
             return amount;
         }
 
+        public PanelType GetPanelType()
+        {
+            return PanelType.LoadingDialog;
+        }
+
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
@@ -95,17 +102,17 @@ namespace Com.FurtherSystems.vQL.Client
 
         public bool IsShowing()
         {
-            return gameObject.activeSelf;
+            return content.activeSelf;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public void Dismiss()
         {
-            gameObject.SetActive(false);
+            content.SetActive(false);
         }
     }
 }

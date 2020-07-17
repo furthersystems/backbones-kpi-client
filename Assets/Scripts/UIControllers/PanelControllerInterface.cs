@@ -13,8 +13,24 @@
 
 namespace Com.FurtherSystems.vQL.Client
 {
+    public enum PanelType
+    {
+        Regist,
+        View,
+        Setting,
+        Main,
+        VendorRegist,
+        VendorManage,
+        VendorMain,
+        SearchDialog,
+        LoadingDialog,
+        ErrorDialog,
+        Fade,
+    }
     public interface PanelControllerInterface
     {
+        PanelType GetPanelType();
+
         void Initialize(PanelSwitcher switcher);
 
         bool IsShowing();

@@ -22,7 +22,6 @@ namespace Com.FurtherSystems.vQL.Client
 {
     public class VendorRegistPanelController : MonoBehaviour, PanelControllerInterface
     {
-
         [SerializeField]
         WebAPIClient webApi;
         [SerializeField]
@@ -31,8 +30,15 @@ namespace Com.FurtherSystems.vQL.Client
         Text RegistCaption;
         [SerializeField]
         Identifier identifier;
+        [SerializeField]
+        GameObject content;
 
         PanelSwitcher panelSwitcher;
+
+        public PanelType GetPanelType()
+        {
+            return PanelType.VendorRegist;
+        }
 
         public void Initialize(PanelSwitcher switcher)
         {
@@ -41,17 +47,17 @@ namespace Com.FurtherSystems.vQL.Client
 
         public bool IsShowing()
         {
-            return gameObject.activeSelf;
+            return content.activeSelf;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public void Dismiss()
         {
-            gameObject.SetActive(false);
+            content.SetActive(false);
         }
 
         public void CallRegistVendor()
@@ -80,7 +86,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
                 identifier.SetPrivateCode(data.PrivateCode);
                 identifier.SetSessionId(data.SessionId);
-                panelSwitcher.FadeVendorManage();
+                panelSwitcher.Fade(PanelType.VendorManage);
                 panelSwitcher.DepopLoadingDialog();
             }
             else
@@ -88,6 +94,22 @@ namespace Com.FurtherSystems.vQL.Client
                 panelSwitcher.PopErrorDialog();
                 panelSwitcher.DepopLoadingDialog();
             }
+        }
+
+        public void CallFadeBack()
+        {
+            StartCoroutine(FadeBack());
+        }
+
+        IEnumerator FadeBack()
+        {
+            yield return null;
+            panelSwitcher.PopLoadingDialog();
+            yield return null;
+            panelSwitcher.FadeBack();
+            yield return null;
+            panelSwitcher.DepopLoadingDialog();
+            yield return null;
         }
     }
 }

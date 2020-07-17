@@ -10,25 +10,26 @@
 // Vendor Regist Panel Controller
 // </summary>
 //------------------------------------------------------------------------------
-using System;
-using System.Text;
-using System.Security.Cryptography;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using System.IO;
 
 namespace Com.FurtherSystems.vQL.Client
 {
     public class RegistPanelController : MonoBehaviour, PanelControllerInterface
     {
-
         [SerializeField]
         WebAPIClient webApi;
         [SerializeField]
         Identifier identifier;
+        [SerializeField]
+        GameObject content;
 
         PanelSwitcher panelSwitcher;
+
+        public PanelType GetPanelType()
+        {
+            return PanelType.Regist;
+        }
 
         public void Initialize(PanelSwitcher switcher)
         {
@@ -37,17 +38,17 @@ namespace Com.FurtherSystems.vQL.Client
 
         public bool IsShowing()
         {
-            return gameObject.activeSelf;
+            return content.activeSelf;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public void Dismiss()
         {
-            gameObject.SetActive(false);
+            content.SetActive(false);
         }
 
         public void CallCreateAccount()
@@ -75,7 +76,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
                 identifier.SetPrivateCode(data.PrivateCode);
                 identifier.SetSessionId(data.SessionId);
-                panelSwitcher.FadeVendorManage();
+                panelSwitcher.Fade(PanelType.VendorManage);
                 panelSwitcher.DepopLoadingDialog();
             }
             else
@@ -107,7 +108,7 @@ namespace Com.FurtherSystems.vQL.Client
 
                 // TODO create file update "vendors"
 
-                panelSwitcher.FadeMain();
+                panelSwitcher.Fade(PanelType.Main);
                 panelSwitcher.DepopLoadingDialog();
             }
             else
@@ -122,13 +123,12 @@ namespace Com.FurtherSystems.vQL.Client
             StartCoroutine(FadeView());
         }
 
-
         IEnumerator FadeView()
         {
             yield return null;
             panelSwitcher.PopLoadingDialog();
             yield return null;
-            panelSwitcher.FadeView();
+            panelSwitcher.Fade(PanelType.View);
             yield return null;
             panelSwitcher.DepopLoadingDialog();
             yield return null;

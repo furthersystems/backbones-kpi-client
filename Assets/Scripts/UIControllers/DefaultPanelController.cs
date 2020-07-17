@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="PanelControllerDefault.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="DefaultPanelController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,21 +7,24 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// QR Scan Camera Script
+// Default Panel Controller
 // </summary>
 //------------------------------------------------------------------------------
-using System;
 using UnityEngine;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public class ErrorDialogController : MonoBehaviour, PanelControllerInterface
+    public class DefaultPanelController : MonoBehaviour, PanelControllerInterface
     {
+        [SerializeField]
+        GameObject content;
+
         PanelSwitcher panelSwitcher;
 
-        public string Message { get; set; }
-
-        public string Debug { get; set; }
+        public PanelType GetPanelType()
+        {
+            return PanelType.Fade;
+        }
 
         public void Initialize(PanelSwitcher switcher)
         {
@@ -30,26 +33,17 @@ namespace Com.FurtherSystems.vQL.Client
 
         public bool IsShowing()
         {
-            return gameObject.activeSelf;
+            return content.activeSelf;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public void Dismiss()
         {
-            gameObject.SetActive(false);
-        }
-
-        void Update()
-        {
-            if (IsShowing())
-            {
-                var touch = TouchInfo.Get(0);
-                if (touch != TouchType.None) Dismiss();
-            }
+            content.SetActive(false);
         }
     }
 }
