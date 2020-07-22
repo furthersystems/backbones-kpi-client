@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="ViewPanelController.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="VendorMainPanelController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,7 +7,7 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// View Panel Controller
+// Vendor Main Panel Controller
 // </summary>
 //------------------------------------------------------------------------------
 using System;
@@ -22,10 +22,6 @@ namespace Com.FurtherSystems.vQL.Client
 {
     public class VendorMainPanelController : MonoBehaviour, PanelControllerInterface
     {
-        [SerializeField]
-        WebAPIClient webApi;
-        [SerializeField]
-        Identifier identifier;
         [SerializeField]
         GameObject content;
 

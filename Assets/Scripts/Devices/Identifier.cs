@@ -1,90 +1,89 @@
-﻿using System;
-using System.IO;
+﻿//------------------------------------------------------------------------------
+// <copyright file="Identifier.cs" company="FurtherSystem Co.,Ltd.">
+// Copyright (C) 2020 FurtherSystem Co.,Ltd.
+// This software is released under the MIT License.
+// http://opensource.org/licenses/mit-license.php
+// </copyright>
+// <author>FurtherSystem Co.,Ltd.</author>
+// <email>info@furthersystem.com</email>
+// <summary>
+// Identifier
+// </summary>
+//------------------------------------------------------------------------------
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 
-public class Identifier : MonoBehaviour
+namespace Com.FurtherSystems.vQL.Client
 {
-    const string MagicKey = "KIWIKIWIKIWIKIWIKIWIKIWIKIWIKIWI";
-    const string SeedFile = "seed";
-    const string PrivFile = "priv";
-
-    public void SetSessionId(string sessionId)
+    public partial class Instance
     {
-        SessionId = sessionId;
-    }
-
-    public string SessionId { private set; get; }
-
-    string Load(string path, string file)
-    {
-        var str = string.Empty;
-        try
+        public class Identifier
         {
-            using (var reader = new StreamReader(Path.Combine(path, file)))
+            public Identifier()
             {
-                str = reader.ReadToEnd();
+            }
+
+            public void SetSessionId(string sessionId)
+            {
+                SessionId = sessionId;
+            }
+
+            public string SessionId { private set; get; }
+
+            public void SetPrivateCode(string priv)
+            {
+                Storage.Save(Storage.Type.PrivateCode, priv);
+            }
+
+            public string GetPrivateKey()
+            {
+                return Storage.Load(Storage.Type.PrivateCode);
+            }
+
+            public (string, long) GetSeed()
+            {
+                var saveSeed = Storage.Load(Storage.Type.Seed);
+                Debug.Log(saveSeed);
+                var seed = saveSeed.Split(',')[0];
+                long originTicks = 0;
+                long.TryParse(saveSeed.Split(',')[1], out originTicks);
+                return (seed, originTicks);
+            }
+
+            public (string, long) CreateSeed(string platform, long ticks)
+            {
+                Debug.Log(GetPlatformIdentifier() + " " + platform + " " + ticks.ToString() + "," + Storage.ServiceUniqueKey);
+                string saveSeed = GenerateHash(GetPlatformIdentifier() + platform + ticks.ToString(), Storage.ServiceUniqueKey) + "," + ticks.ToString();
+                Storage.Save(Storage.Type.Seed, saveSeed);
+
+                var seed = saveSeed.Split(',')[0];
+                long originTicks = 0;
+                long.TryParse(saveSeed.Split(',')[1], out originTicks);
+                return (seed, ticks);
+            }
+
+            public string AddNonce(string seed, long nonce)
+            {
+                Debug.Log(seed + " " + nonce.ToString() + "," + Storage.ServiceUniqueKey);
+                return GenerateHash(seed + nonce.ToString(), Storage.ServiceUniqueKey);
+            }
+
+            public string GenerateHash(string plane, string key)
+            {
+                var encode = new UTF8Encoding();
+                var planeBytes = encode.GetBytes(plane);
+                var keyBytes = encode.GetBytes(key);
+                var sha = new HMACSHA256(keyBytes);
+                var hashBytes = sha.ComputeHash(planeBytes);
+                return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
+            }
+
+            public string GetPlatformIdentifier()
+            {
+                return GenerateHash(SystemInfo.deviceUniqueIdentifier, Storage.ServiceUniqueKey);
             }
         }
-        catch (Exception e)
-        {
-            Debug.Log("error: " + e.Message);
-        }
-        return str;
-    }
-
-    void Save(string path, string file, string data)
-    {
-        using (var writer = new StreamWriter(Path.Combine(path, file)))
-        {
-            writer.WriteLine(data);
-            writer.Flush();
-        }
-    }
-
-    public void SetPrivateCode(string priv)
-    {
-        Save(Application.persistentDataPath, PrivFile, priv);
-    }
-
-    public string GetPrivateKey()
-    {
-        return Load(Application.persistentDataPath, PrivFile);
-    }
-
-    public string GetSeed(string platform, long ticks)
-    {
-        Debug.Log(Application.persistentDataPath);
-        var seed = Load(Application.persistentDataPath, SeedFile);
-        if (seed.Equals(string.Empty))
-        {
-            Debug.Log(GetPlatformIdentifier() + " " + platform + " " + ticks.ToString() + "," + MagicKey);
-            seed = GenerateHash(GetPlatformIdentifier() + platform + ticks.ToString(), MagicKey) + "," + ticks.ToString();
-            Save(Application.persistentDataPath, SeedFile, seed);
-        }
-
-        return seed;
-    }
-
-    public string AddNonce(string seed, long nonce)
-    {
-        Debug.Log(seed + " " + nonce.ToString() + "," + MagicKey);
-        return GenerateHash(seed + nonce.ToString(), MagicKey);
-    }
-
-    public string GenerateHash(string plane, string key)
-    {
-        var encode = new UTF8Encoding();
-        var planeBytes = encode.GetBytes(plane);
-        var keyBytes = encode.GetBytes(key);
-        var sha = new HMACSHA256(keyBytes);
-        var hashBytes = sha.ComputeHash(planeBytes);
-        return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
-    }
-
-    public string GetPlatformIdentifier()
-    {
-        return GenerateHash(SystemInfo.deviceUniqueIdentifier, MagicKey);
     }
 }

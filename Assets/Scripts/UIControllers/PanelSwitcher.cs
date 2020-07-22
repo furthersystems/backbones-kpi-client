@@ -21,9 +21,6 @@ namespace Com.FurtherSystems.vQL.Client
     public class PanelSwitcher : MonoBehaviour
     {
         [SerializeField]
-        WebAPIClient webApi;
-
-        [SerializeField]
         Component[] PanelObjects;
 
         Dictionary<PanelType, PanelControllerInterface> panels;
@@ -37,7 +34,7 @@ namespace Com.FurtherSystems.vQL.Client
         PanelType currentPanel;
         PanelType beforePanel;
 
-        void Start()
+        public void Initialize()
         {
             panels = new Dictionary<PanelType, PanelControllerInterface>();
             foreach (var component in PanelObjects)
@@ -58,7 +55,7 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 if (!panels.ContainsKey((PanelType)value))
                 {
-                    throw new Exception("panel type "+ ((PanelType)value).ToString() + " component is not found.");
+                    throw new Exception("panel type " + ((PanelType)value).ToString() + " component is not found.");
                 }
             }
         }

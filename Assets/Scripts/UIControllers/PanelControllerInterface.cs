@@ -19,7 +19,7 @@ namespace Com.FurtherSystems.vQL.Client
         View,
         Setting,
         Main,
-        VendorRegist,
+        VendorSetting,
         VendorManage,
         VendorMain,
         SearchDialog,

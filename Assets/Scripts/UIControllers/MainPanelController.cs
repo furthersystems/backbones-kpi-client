@@ -23,11 +23,19 @@ namespace Com.FurtherSystems.vQL.Client
     public class MainPanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
-        WebAPIClient webApi;
-        [SerializeField]
-        Identifier identifier;
-        [SerializeField]
         GameObject content;
+        [SerializeField]
+        Text total;
+        [SerializeField]
+        Text beforePersons;
+        [SerializeField]
+        Text keyCodePrefix;
+        [SerializeField]
+        Text keyCodeSuffix;
+        [SerializeField]
+        GameObject beforePersonIcon1;
+        [SerializeField]
+        GameObject beforePersonIcon2;
 
         PanelSwitcher panelSwitcher;
 
@@ -48,6 +56,24 @@ namespace Com.FurtherSystems.vQL.Client
 
         public void Show()
         {
+            var vendor = Instance.Vendors.GetVendor("6dxsvUNdvtjGGKiNipmoGMPJJ6/GvefpBGQjDPp8fZU=");
+            total.text = vendor.TotalWaiting + "人待ち";
+            if (vendor.PersonsWaitingBefore > 0)
+            {
+                beforePersonIcon1.SetActive(true);
+                beforePersonIcon2.SetActive(true);
+                beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
+                keyCodePrefix.text = vendor.KeyCodePrefix;
+                keyCodeSuffix.text = "";
+            }
+            else
+            {
+                beforePersonIcon1.SetActive(false);
+                beforePersonIcon2.SetActive(false);
+                beforePersons.text = "\nあなたの順番が来ました。以下のコードを提示してください。";
+                keyCodePrefix.text = vendor.KeyCodePrefix;
+                keyCodeSuffix.text = vendor.KeyCodeSuffix;
+            }
             content.SetActive(true);
         }
 

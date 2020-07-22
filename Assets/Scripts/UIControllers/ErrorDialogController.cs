@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="PanelControllerDefault.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="ErrorDialogController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,7 +7,7 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// QR Scan Camera Script
+// Error Dialog Controller
 // </summary>
 //------------------------------------------------------------------------------
 using System;

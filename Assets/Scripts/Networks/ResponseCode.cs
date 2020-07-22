@@ -74,5 +74,6 @@ namespace Com.FurtherSystems.vQL.Client
         // UserAuthOption XX9XX
         ResponseNgUserAuthLacked = 900, // ng, user auth info lacked.
         ResponseNgUserAuthFailed = 901, // ng, user auth failed.
+        ResponseNgUserAuthNotFound = 902, // ng, user auth not found.
     }
 }

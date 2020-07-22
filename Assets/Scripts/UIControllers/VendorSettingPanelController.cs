@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="VendorRegistPanelController.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="VendorSettingPanelController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,7 +7,7 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// Vendor Regist Panel Controller
+// Vendor Setting Panel Controller
 // </summary>
 //------------------------------------------------------------------------------
 using System;
@@ -20,16 +20,12 @@ using System.IO;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public class VendorRegistPanelController : MonoBehaviour, PanelControllerInterface
+    public class VendorSettingPanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
-        WebAPIClient webApi;
+        Text SetName;
         [SerializeField]
-        Text RegistName;
-        [SerializeField]
-        Text RegistCaption;
-        [SerializeField]
-        Identifier identifier;
+        Text SetCaption;
         [SerializeField]
         GameObject content;
 
@@ -37,7 +33,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         public PanelType GetPanelType()
         {
-            return PanelType.VendorRegist;
+            return PanelType.VendorSetting;
         }
 
         public void Initialize(PanelSwitcher switcher)
@@ -60,32 +56,26 @@ namespace Com.FurtherSystems.vQL.Client
             content.SetActive(false);
         }
 
-        public void CallRegistVendor()
+        public void CallSetVendor()
         {
-            StartCoroutine(RegistVendor());
+            StartCoroutine(SetVendor());
         }
 
-        IEnumerator RegistVendor()
+        IEnumerator SetVendor()
         {
             panelSwitcher.PopLoadingDialog();
-            var ticks = WebAPIClient.GetUnixTime();
-            var nonce = WebAPIClient.GetTimestamp();
-            var savedSeed = identifier.GetSeed(WebAPIClient.GetPlatform(), ticks);
-            Debug.Log(savedSeed);
-            var seed = savedSeed.Split(',')[0];
-            long originTicks = 0;
-            long.TryParse(savedSeed.Split(',')[1], out originTicks);
-            yield return StartCoroutine(webApi.RegistVendor(RegistName.text, RegistCaption.text, identifier.AddNonce(seed,nonce), identifier.GetPlatformIdentifier(), originTicks, nonce));
-            if (webApi.Result)
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var (seed, ticks) = Instance.Ident.GetSeed();
+            yield return StartCoroutine(Instance.WebAPI.SetVendor(SetName.text, SetCaption.text, Instance.Ident.SessionId, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
+            if (Instance.WebAPI.Result)
             {
-                var data = webApi.DequeueResultData<WebAPIClient.ResponseBodyVendorCreate>();
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorSetting>();
                 Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
                 Debug.Log("data.VendorCode: " + data.VendorCode);
-                Debug.Log("data.PrivateKey: " + data.PrivateCode);
-                Debug.Log("data.SessionId: " + data.SessionId);
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
-                identifier.SetPrivateCode(data.PrivateCode);
-                identifier.SetSessionId(data.SessionId);
+
+                Storage.Save(Storage.Type.VendorCode, data.VendorCode);
+
                 panelSwitcher.Fade(PanelType.VendorManage);
                 panelSwitcher.DepopLoadingDialog();
             }

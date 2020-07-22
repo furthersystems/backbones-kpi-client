@@ -23,10 +23,6 @@ namespace Com.FurtherSystems.vQL.Client
     public class SettingPanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
-        WebAPIClient webApi;
-        [SerializeField]
-        Identifier identifier;
-        [SerializeField]
         GameObject content;
 
         PanelSwitcher panelSwitcher;
