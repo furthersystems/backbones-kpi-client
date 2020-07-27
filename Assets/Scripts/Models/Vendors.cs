@@ -12,6 +12,7 @@
 //------------------------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Com.FurtherSystems.vQL.Client
@@ -33,9 +34,16 @@ namespace Com.FurtherSystems.vQL.Client
         public int TotalWaiting;
     }
 
+    [Serializable]
     public class Vendors
     {
-        private Dictionary<string, Vendor> vendors = new Dictionary<string, Vendor>();
+        [SerializeField]
+        private string currentCode = string.Empty;
+        [SerializeField]
+        private string[] codes = new string[] { };
+        [SerializeField]
+        private Vendor[] vendors = new Vendor[] { };
+
         public Vendors()
         {
             Initialize();
@@ -46,26 +54,40 @@ namespace Com.FurtherSystems.vQL.Client
             if (Storage.Exists(Storage.Type.Vendors))
             {
                 var json = Storage.Load(Storage.Type.Vendors);
-                var data = JsonUtility.FromJson<Vendor[]>(json);
-                foreach (var ele in data)
-                {
-                    vendors[ele.VendorCode] = ele;
-                }
+                FillFromJson(json);
             }
+        }
+
+        private string ToJson()
+        {
+            return JsonUtility.ToJson(this);
+        }
+
+        private void FillFromJson(string js)
+        {
+            var data = JsonUtility.FromJson<Vendors>(js);
+            codes = data.codes;
+            vendors = data.vendors;
         }
 
         public void SetVendor(string vendorCode, Vendor vendor)
         {
-            vendors[vendorCode] = vendor;
-            var array = new Vendor[vendors.Keys.Count];
-            vendors.Values.CopyTo(array, 0);
-            var jsoned = JsonUtility.ToJson(array);
+            currentCode = vendorCode;
+            codes = codes.Concat(new string[] { vendorCode }).ToArray();
+            vendors = vendors.Concat(new Vendor[] { vendor }).ToArray();
+            var jsoned = ToJson();
             Storage.Save(Storage.Type.Vendors, jsoned);
+        }
+
+        public Vendor GetVendor()
+        {
+            return GetVendor(currentCode);
         }
 
         public Vendor GetVendor(string vendorCode)
         {
-            return vendors[vendorCode];
+            var index = Array.IndexOf(codes, vendorCode);
+            return vendors[index];
         }
     }
 }

@@ -52,9 +52,11 @@ namespace Com.FurtherSystems.vQL.Client
                     Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
                     Debug.Log("data.PrivateCode: " + data.PrivateCode);
                     Debug.Log("data.SessionId: " + data.SessionId);
+                    Debug.Log("data.SessionPrivate: " + data.SessionPrivate);
                     Debug.Log("data.Ticks:" + data.Ticks.ToString());
                     Instance.Ident.SetPrivateCode(data.PrivateCode);
                     Instance.Ident.SetSessionId(data.SessionId);
+                    Instance.Ident.SetSessionPrivate(data.SessionPrivate);
                     Debug.Log("private key created.");
                 }
                 else
@@ -74,8 +76,10 @@ namespace Com.FurtherSystems.vQL.Client
                     var data = Instance.WebAPI.DequeueResultData<Messages.Response.Logon>();
                     Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
                     Debug.Log("data.SessionId: " + data.SessionId);
+                    Debug.Log("data.SessionPrivate: " + data.SessionPrivate);
                     Debug.Log("data.Ticks:" + data.Ticks.ToString());
                     Instance.Ident.SetSessionId(data.SessionId);
+                    Instance.Ident.SetSessionPrivate(data.SessionPrivate);
                     Debug.Log("private key created.");
                 }
                 else

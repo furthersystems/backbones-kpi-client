@@ -171,7 +171,7 @@ namespace Com.FurtherSystems.vQL.Client
                     Ticks = ticks
                 };
 
-                return Request(RequestType.Post, "/on", reqBody, nonce);
+                return Request(RequestType.Post, "/logon", reqBody, nonce);
             }
 
             public IEnumerator Enqueue(string session, string vendorCode, string queueCode, long ticks, long nonce)
@@ -181,7 +181,6 @@ namespace Com.FurtherSystems.vQL.Client
 
                 var reqBody = new Messages.Request.Enqueue
                 {
-                    SessionId = session,
                     VendorCode = vendorCode,
                     QueueCode = queueCode,
                     Ticks = ticks
@@ -197,7 +196,6 @@ namespace Com.FurtherSystems.vQL.Client
 
                 var reqBody = new Messages.Request.VendorSetting
                 {
-                    SessionId = sessionId,
                     Name = name,
                     Caption = caption,
                     Ticks = ticks
@@ -242,6 +240,9 @@ namespace Com.FurtherSystems.vQL.Client
                     req.SetRequestHeader("Platform", GetPlatform());
                     req.SetRequestHeader("Nonce", nonce.ToString());
                     req.SetRequestHeader("IV", ivReq.ToString());
+                    req.SetRequestHeader("Session", Ident.SessionId);
+                    req.SetRequestHeader("Hash", Ident.GenerateHash(Ident.SessionPrivate + nonce.ToString(), Storage.ServiceUniqueKey));
+                    
                     req.SendWebRequest();
                     while (true)
                     {

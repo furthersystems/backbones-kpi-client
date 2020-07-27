@@ -25,12 +25,19 @@ namespace Com.FurtherSystems.vQL.Client
             {
             }
 
+            public string SessionId { private set; get; } = "";
+
             public void SetSessionId(string sessionId)
             {
                 SessionId = sessionId;
             }
 
-            public string SessionId { private set; get; }
+            public string SessionPrivate { private set; get; } = "";
+
+            public void SetSessionPrivate(string sessionPrivate)
+            {
+                SessionPrivate = sessionPrivate;
+            }
 
             public void SetPrivateCode(string priv)
             {

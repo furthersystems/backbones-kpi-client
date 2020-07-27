@@ -56,7 +56,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         public void Show()
         {
-            var vendor = Instance.Vendors.GetVendor("6dxsvUNdvtjGGKiNipmoGMPJJ6/GvefpBGQjDPp8fZU=");
+            var vendor = Instance.Vendors.GetVendor();
             total.text = vendor.TotalWaiting + "人待ち";
             if (vendor.PersonsWaitingBefore > 0)
             {

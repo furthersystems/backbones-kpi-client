@@ -15,7 +15,13 @@ using System;
 namespace Com.FurtherSystems.vQL.Client.Messages.Request
 {
     [Serializable]
-    public class Create
+    public class Base
+    {
+        public long Ticks;
+    }
+
+    [Serializable]
+    public class Create : Base
     {
         public Create()
         {
@@ -24,77 +30,88 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
         public byte IdentifierType;
         public string Identifier;
         public string Seed;
-        public long Ticks;
     }
 
     [Serializable]
-    public class Logon
+    public class Logon : Base
     {
         public Logon()
         {
 
         }
         public string PrivateCode;
-        public long Ticks;
     }
 
     [Serializable]
-    public class Enqueue
+    public class Enqueue : Base
     {
         public Enqueue()
         {
 
         }
-        public string SessionId;
         public string VendorCode;
         public string QueueCode;
-        public long Ticks;
     }
 
     [Serializable]
-    public class VendorSetting
+    public class Queue : Base
+    {
+        public Queue()
+        {
+
+        }
+        public string VendorCode;
+        public string QueueCode;
+        public string KeyCodePrefix;
+        public string KeyCodeSuffix;
+    }
+
+    [Serializable]
+    public class VendorSetting : Base
     {
         public VendorSetting()
         {
 
         }
-        public string SessionId;
         public string Name;
         public string Caption;
-        public long Ticks;
     }
 }
 
 namespace Com.FurtherSystems.vQL.Client.Messages.Response
 {
+    [Serializable]
+    public class Base
+    {
+        public ResponseCode ResponseCode;
+        public long Ticks;
+    }
 
     [Serializable]
-    public class Create
+    public class Create : Base
     {
         public Create()
         {
 
         }
-        public ResponseCode ResponseCode;
         public string PrivateCode;
         public string SessionId;
-        public long Ticks;
+        public string SessionPrivate;
     }
 
     [Serializable]
-    public class Logon
+    public class Logon : Base
     {
         public Logon()
         {
 
         }
-        public ResponseCode ResponseCode;
         public string SessionId;
-        public long Ticks;
+        public string SessionPrivate;
     }
 
     [Serializable]
-    public class Enqueue
+    public class Enqueue : Base
     {
         public Enqueue()
         {
@@ -104,18 +121,27 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
         public string KeyCodeSuffix;
         public int PersonsWaitingBefore;
         public int TotalWaiting;
-        public long Ticks;
     }
 
     [Serializable]
-    public class VendorSetting
+    public class Queue : Base
+    {
+        public Queue()
+        {
+
+        }
+        public int PersonsWaitingBefore;
+        public int TotalWaiting;
+        public int Status;
+    }
+
+    [Serializable]
+    public class VendorSetting : Base
     {
         public VendorSetting()
         {
 
         }
-        public ResponseCode ResponseCode;
         public string VendorCode;
-        public long Ticks;
     }
 }
