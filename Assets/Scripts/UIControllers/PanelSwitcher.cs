@@ -12,6 +12,7 @@
 //------------------------------------------------------------------------------
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -60,54 +61,63 @@ namespace Com.FurtherSystems.vQL.Client
             }
         }
 
-        public void Fade(PanelType type)
+        public IEnumerator Fade(PanelType type)
         {
-            AllDeactive();
+            yield return AllDeactive();
             beforePanel = currentPanel;
             currentPanel = type;
-            panels[currentPanel].Show();
+            yield return panels[currentPanel].Show();
+            Storage.Save(Storage.Type.Latest, ((int)currentPanel).ToString());
         }
 
-        public void FadeBack()
+        public IEnumerator FadeBack()
         {
-            AllDeactive();
+            yield return AllDeactive();
             currentPanel = beforePanel;
-            panels[currentPanel].Show();
+            yield return panels[currentPanel].Show();
+            Storage.Save(Storage.Type.Latest, ((int)currentPanel).ToString());
         }
 
-        public void PopSearchDialog()
+        public IEnumerator PopSearchDialog()
         {
-            panels[PanelType.SearchDialog].Show();
+            yield return panels[PanelType.SearchDialog].Show();
         }
 
-        public void PopLoadingDialog()
+        public IEnumerator PopLoadingDialog()
         {
-            panels[PanelType.LoadingDialog].Show();
+            yield return panels[PanelType.LoadingDialog].Show();
         }
 
-        public void PopErrorDialog()
+        public IEnumerator PopErrorDialog()
         {
-            panels[PanelType.ErrorDialog].Show();
+            yield return panels[PanelType.ErrorDialog].Show();
         }
 
-        public void DepopSearchDialog()
+        public IEnumerator DepopSearchDialog()
         {
-            panels[PanelType.SearchDialog].Dismiss();
+            yield return panels[PanelType.SearchDialog].Dismiss();
         }
 
-        public void DepopLoadingDialog()
+        public IEnumerator DepopLoadingDialog()
         {
-            panels[PanelType.LoadingDialog].Dismiss();
+            yield return panels[PanelType.LoadingDialog].Dismiss();
         }
 
-        public void DepopErrorDialog()
+        public IEnumerator DepopErrorDialog()
         {
-            panels[PanelType.ErrorDialog].Dismiss();
+            yield return panels[PanelType.ErrorDialog].Dismiss();
         }
 
-        void AllDeactive()
+        IEnumerator AllDeactive()
         {
-            panelTypes.ForEach(p => { if (!dialogTypes.Contains(p)) panels[p].Dismiss(); } );
+            foreach(var p in panelTypes)
+            {
+                if (!dialogTypes.Contains(p))
+                {
+                    yield return panels[p].Dismiss();
+                }
+            }
+            yield return null;
         }
     }
 }

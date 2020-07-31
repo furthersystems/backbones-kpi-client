@@ -54,32 +54,55 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
-            var vendor = Instance.Vendors.GetVendor();
-            total.text = vendor.TotalWaiting + "人待ち";
-            if (vendor.PersonsWaitingBefore > 0)
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            var vendorCode = "/tlqq/GzRXTe/wH9w26DZ7M6bYsC9cOW906EN59yG2s=";
+            var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
+            yield return StartCoroutine(Instance.WebAPI.Get(vendorCode, queueCode, ticks, nonce));
+            if (Instance.WebAPI.Result)
             {
-                beforePersonIcon1.SetActive(true);
-                beforePersonIcon2.SetActive(true);
-                beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
-                keyCodePrefix.text = vendor.KeyCodePrefix;
-                keyCodeSuffix.text = "";
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
+                
+                var v = Instance.Vendors.GetVendor(vendorCode);
+                v.VendorCode = vendorCode;
+                v.QueueCode = queueCode;
+                v.PersonsWaitingBefore = data.PersonsWaitingBefore;
+                v.TotalWaiting = data.TotalWaiting;
+                Instance.Vendors.SetVendor(vendorCode, v);
+
+                var vendor = Instance.Vendors.GetVendor();
+                total.text = vendor.TotalWaiting + "人待ち";
+                if (vendor.PersonsWaitingBefore > 0)
+                {
+                    beforePersonIcon1.SetActive(true);
+                    beforePersonIcon2.SetActive(true);
+                    beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
+                    keyCodePrefix.text = vendor.KeyCodePrefix;
+                    keyCodeSuffix.text = "";
+                }
+                else
+                {
+                    beforePersonIcon1.SetActive(false);
+                    beforePersonIcon2.SetActive(false);
+                    beforePersons.text = "\nあなたの順番が来ました。以下のコードを提示してください。";
+                    keyCodePrefix.text = vendor.KeyCodePrefix;
+                    keyCodeSuffix.text = vendor.KeyCodeSuffix;
+                }
             }
             else
             {
-                beforePersonIcon1.SetActive(false);
-                beforePersonIcon2.SetActive(false);
-                beforePersons.text = "\nあなたの順番が来ました。以下のコードを提示してください。";
-                keyCodePrefix.text = vendor.KeyCodePrefix;
-                keyCodeSuffix.text = vendor.KeyCodeSuffix;
+                // error
             }
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
 
         public void CallFadeView()
@@ -89,13 +112,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeView()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.View);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.View);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
     }
 }

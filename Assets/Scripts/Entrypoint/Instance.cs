@@ -16,12 +16,12 @@ namespace Com.FurtherSystems.vQL.Client
     {
         public static WebAPIClient WebAPI = null;
         public static Identifier Ident = null;
-        public static Vendors Vendors = null;
+        public static VendorsInstance Vendors = null;
         public static void Initialize()
         {
             WebAPI = new WebAPIClient();
             Ident = new Identifier();
-            Vendors = new Vendors();
+            Vendors = new VendorsInstance();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         public PanelType GetPanelType()
         {
-            return PanelType.Regist;
+            return PanelType.Enqueue;
         }
 
         public void Initialize(PanelSwitcher switcher)
@@ -37,14 +37,17 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
 
         public void CallEnqueue()
@@ -54,12 +57,12 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator Enqueue()
         {
-            panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            var vendorCode = "uboyz1bW5PSgTNIeC7ZkOBq4mkdvxpOefNklaNn88Fs=";
+            var vendorCode = "/tlqq/GzRXTe/wH9w26DZ7M6bYsC9cOW906EN59yG2s=";
             var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
-            yield return StartCoroutine(Instance.WebAPI.Enqueue(Instance.Ident.SessionId, vendorCode, queueCode, ticks, nonce));
+            yield return StartCoroutine(Instance.WebAPI.Enqueue(vendorCode, queueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.Enqueue>();
@@ -73,13 +76,13 @@ namespace Com.FurtherSystems.vQL.Client
                 vendor.TotalWaiting = data.TotalWaiting;
                 Instance.Vendors.SetVendor(vendorCode, vendor);
 
-                panelSwitcher.Fade(PanelType.Main);
-                panelSwitcher.DepopLoadingDialog();
+                yield return panelSwitcher.Fade(PanelType.Main);
+                yield return panelSwitcher.DepopLoadingDialog();
             }
             else
             {
-                panelSwitcher.PopErrorDialog();
-                panelSwitcher.DepopLoadingDialog();
+                yield return panelSwitcher.PopErrorDialog();
+                yield return panelSwitcher.DepopLoadingDialog();
             }
         }
 
@@ -90,13 +93,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeView()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.View);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.View);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
     }
 }

@@ -41,7 +41,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Delete,
             }
 
-            const string Url = "http://192.168.1.30:7000";
+            const string Url = "http://localhost:7000";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
 
@@ -98,6 +98,11 @@ namespace Com.FurtherSystems.vQL.Client
                 var base64Decoded = Convert.FromBase64String(value);
                 var json = Encoding.UTF8.GetString(base64Decoded);
                 return JsonUtility.FromJson<T>(json);
+            }
+
+            private string ToSafe(string base64str)
+            {
+                return base64str.Replace('=', '-').Replace('+', '.').Replace('/', '_');
             }
 
             public bool Result { get; set; }
@@ -174,7 +179,7 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Post, "/logon", reqBody, nonce);
             }
 
-            public IEnumerator Enqueue(string session, string vendorCode, string queueCode, long ticks, long nonce)
+            public IEnumerator Enqueue(string vendorCode, string queueCode, long ticks, long nonce)
             {
                 Debug.Log("Enqueue start");
                 clearResultData();
@@ -189,9 +194,17 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Post, "/on/queue", reqBody, nonce);
             }
 
+            public IEnumerator Get(string vendorCode, string queueCode, long ticks, long nonce)
+            {
+                Debug.Log("Get start");
+                clearResultData();
+
+                return Request(RequestType.Get, "/on/queue/"+ ToSafe(vendorCode) + "/"+ ToSafe(queueCode), null, nonce);
+            }
+
             public IEnumerator SetVendor(string name, string caption, string sessionId, string ident, long ticks, long nonce)
             {
-                Debug.Log("Create start");
+                Debug.Log("SetVendor start");
                 clearResultData();
 
                 var reqBody = new Messages.Request.VendorSetting
@@ -202,6 +215,14 @@ namespace Com.FurtherSystems.vQL.Client
                 };
 
                 return Request(RequestType.Post, "/on/vendor/upgrade", reqBody, nonce);
+            }
+
+            public IEnumerator VendorManage(string vendorCode, string queueCode, long ticks, long nonce)
+            {
+                Debug.Log("VendorManage start");
+                clearResultData();
+
+                return Request(RequestType.Get, "/on/vendor/manage" + ToSafe(vendorCode) + "/" + ToSafe(queueCode), null, nonce);
             }
 
             private IEnumerator Request(RequestType type, string path, object postData, long nonce)

@@ -11,7 +11,6 @@
 // </summary>
 //------------------------------------------------------------------------------
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -37,57 +36,87 @@ namespace Com.FurtherSystems.vQL.Client
     [Serializable]
     public class Vendors
     {
+        public string CurrentCode = string.Empty;
         [SerializeField]
-        private string currentCode = string.Empty;
-        [SerializeField]
-        private string[] codes = new string[] { };
-        [SerializeField]
-        private Vendor[] vendors = new Vendor[] { };
-
+        public Vendor[] vendors = null;
         public Vendors()
         {
+            CurrentCode = string.Empty;
+            vendors = new Vendor[] { };
+        }
+    }
+
+    public class VendorsInstance
+    {
+        private Vendors instance; 
+
+        public VendorsInstance()
+        {
+            instance = new Vendors();
             Initialize();
         }
 
-        public void Initialize()
+        private void Initialize()
         {
             if (Storage.Exists(Storage.Type.Vendors))
             {
                 var json = Storage.Load(Storage.Type.Vendors);
-                FillFromJson(json);
+                instance = JsonUtility.FromJson<Vendors>(json);
             }
         }
 
         private string ToJson()
         {
-            return JsonUtility.ToJson(this);
-        }
-
-        private void FillFromJson(string js)
-        {
-            var data = JsonUtility.FromJson<Vendors>(js);
-            codes = data.codes;
-            vendors = data.vendors;
+            return JsonUtility.ToJson(instance);
         }
 
         public void SetVendor(string vendorCode, Vendor vendor)
         {
-            currentCode = vendorCode;
-            codes = codes.Concat(new string[] { vendorCode }).ToArray();
-            vendors = vendors.Concat(new Vendor[] { vendor }).ToArray();
+            var index = GetIndex(vendorCode);
+            if (index >= 0)
+            {
+                instance.CurrentCode = vendorCode;
+                instance.vendors[index] = vendor;
+            }
+            else
+            {
+                instance.CurrentCode = vendorCode;
+                instance.vendors = instance.vendors.Concat(new Vendor[] { vendor }).ToArray();
+            }
             var jsoned = ToJson();
             Storage.Save(Storage.Type.Vendors, jsoned);
         }
 
         public Vendor GetVendor()
         {
-            return GetVendor(currentCode);
+            return GetVendor(instance.CurrentCode);
         }
 
         public Vendor GetVendor(string vendorCode)
         {
-            var index = Array.IndexOf(codes, vendorCode);
-            return vendors[index];
+            var index = GetIndex(vendorCode);
+            if (index >= 0)
+            {
+                return instance.vendors[index];
+            }
+            else
+            {
+                return new Vendor();
+            }
+        }
+
+        private int GetIndex(string vendorCode)
+        {
+            int targetIndex = -1;
+            for (int index = 0; index < instance.vendors.Length; index++)
+            {
+                if (instance.vendors[index].VendorCode == vendorCode)
+                {
+                    targetIndex = index;
+                    break;
+                }
+            }
+            return targetIndex;
         }
     }
 }

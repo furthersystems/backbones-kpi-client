@@ -10,6 +10,7 @@
 // Loading Dialog Controller
 // </summary>
 //------------------------------------------------------------------------------
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -105,14 +106,16 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
     }
 }

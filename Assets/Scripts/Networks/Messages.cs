@@ -60,10 +60,6 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
         {
 
         }
-        public string VendorCode;
-        public string QueueCode;
-        public string KeyCodePrefix;
-        public string KeyCodeSuffix;
     }
 
     [Serializable]

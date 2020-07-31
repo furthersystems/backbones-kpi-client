@@ -91,7 +91,18 @@ namespace Com.FurtherSystems.vQL.Client
             }
             Debug.Log("logon ok.");
 
-            panelSwitcher.Fade(PanelType.Regist);
+            if (!Storage.Exists(Storage.Type.Latest))
+            {
+                Debug.Log("latest not found. open enqueue.");
+                yield return panelSwitcher.Fade(PanelType.Enqueue);
+            }
+            else
+            {
+                var latest = Storage.Load(Storage.Type.Latest);
+                yield return panelSwitcher.PopLoadingDialog();
+                yield return panelSwitcher.Fade((PanelType)int.Parse(latest));
+                yield return panelSwitcher.DepopLoadingDialog();
+            }
         }
     }
 }

@@ -11,11 +11,13 @@
 // </summary>
 //------------------------------------------------------------------------------
 
+using System.Collections;
+
 namespace Com.FurtherSystems.vQL.Client
 {
-    public enum PanelType
+    public enum PanelType : int
     {
-        Regist,
+        Enqueue,
         View,
         Setting,
         Main,
@@ -27,6 +29,7 @@ namespace Com.FurtherSystems.vQL.Client
         ErrorDialog,
         Fade,
     }
+
     public interface PanelControllerInterface
     {
         PanelType GetPanelType();
@@ -35,8 +38,16 @@ namespace Com.FurtherSystems.vQL.Client
 
         bool IsShowing();
 
-        void Show();
+        //IEnumerator PreShow();
 
-        void Dismiss();
+        IEnumerator Show();
+
+        //IEnumerator PostShow();
+
+        //IEnumerator PreDismiss();
+
+        IEnumerator Dismiss();
+
+        //IEnumerator PostDismiss();
     }
 }

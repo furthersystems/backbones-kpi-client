@@ -42,14 +42,16 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
 
         public void CallSearch()
@@ -59,13 +61,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator Search()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
             //panelSwitcher.Fade(PanelType.Regist);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.DepopLoadingDialog();
         }
 
         public void CallDepopSearchDialog()
@@ -75,8 +73,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator DepopSearchDialog()
         {
-            panelSwitcher.DepopSearchDialog();
-            yield return null;
+            yield return panelSwitcher.DepopSearchDialog();
         }
     }
 }

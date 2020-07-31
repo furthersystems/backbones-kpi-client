@@ -46,14 +46,16 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
 
         public void CallSetVendor()
@@ -76,13 +78,13 @@ namespace Com.FurtherSystems.vQL.Client
 
                 Storage.Save(Storage.Type.VendorCode, data.VendorCode);
 
-                panelSwitcher.Fade(PanelType.VendorManage);
-                panelSwitcher.DepopLoadingDialog();
+                yield return panelSwitcher.Fade(PanelType.VendorManage);
+                yield return panelSwitcher.DepopLoadingDialog();
             }
             else
             {
-                panelSwitcher.PopErrorDialog();
-                panelSwitcher.DepopLoadingDialog();
+                yield return panelSwitcher.PopErrorDialog();
+                yield return panelSwitcher.DepopLoadingDialog();
             }
         }
 
@@ -93,13 +95,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeBack()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.FadeBack();
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.FadeBack();
+            yield return panelSwitcher.DepopLoadingDialog();
         }
     }
 }

@@ -42,14 +42,16 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
         }
 
         public void CallFadeRegist()
@@ -59,13 +61,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeRegist()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.Regist);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.Enqueue);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
 
         public void CallFadeSetting()
@@ -75,13 +73,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeSetting()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.Setting);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.Setting);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
     }
 }

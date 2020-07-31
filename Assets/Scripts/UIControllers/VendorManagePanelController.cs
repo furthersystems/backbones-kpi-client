@@ -42,14 +42,58 @@ namespace Com.FurtherSystems.vQL.Client
             return content.activeSelf;
         }
 
-        public void Show()
+        public IEnumerator Show()
         {
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            var vendorCode = "/tlqq/GzRXTe/wH9w26DZ7M6bYsC9cOW906EN59yG2s=";
+            var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
+            yield return StartCoroutine(Instance.WebAPI.VendorManage(vendorCode, queueCode, ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
+
+                var v = Instance.Vendors.GetVendor(vendorCode);
+                v.VendorCode = vendorCode;
+                v.QueueCode = queueCode;
+                v.PersonsWaitingBefore = data.PersonsWaitingBefore;
+                v.TotalWaiting = data.TotalWaiting;
+                Instance.Vendors.SetVendor(vendorCode, v);
+
+
+            }
+            else
+            {
+                // error
+            }
             content.SetActive(true);
+            yield return null;
         }
 
-        public void Dismiss()
+        public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
+        }
+
+        public void CallEnterRow()
+        {
+            StartCoroutine(EnterRow());
+        }
+
+        IEnumerator EnterRow()
+        {
+            yield return null;
+        }
+
+        public void CallNotifyRow()
+        {
+            StartCoroutine(NotifyRow());
+        }
+
+        IEnumerator NotifyRow()
+        {
+            yield return null;
         }
 
         public void CallPopSearchDialog()
@@ -59,8 +103,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator PopSearchDialog()
         {
-            yield return null;
-            panelSwitcher.PopSearchDialog();
+            yield return panelSwitcher.PopSearchDialog();
         }
 
         public void CallFadeVendorRegist()
@@ -70,13 +113,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeVendorRegist()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.VendorSetting);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.VendorSetting);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
 
         public void CallFadeVendorMain()
@@ -86,13 +125,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator FadeVendorMain()
         {
-            yield return null;
-            panelSwitcher.PopLoadingDialog();
-            yield return null;
-            panelSwitcher.Fade(PanelType.VendorMain);
-            yield return null;
-            panelSwitcher.DepopLoadingDialog();
-            yield return null;
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.VendorMain);
+            yield return panelSwitcher.DepopLoadingDialog();
         }
     }
 }
