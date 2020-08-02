@@ -41,7 +41,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Delete,
             }
 
-            const string Url = "http://localhost:7000";
+            const string Url = "http://192.168.1.30:7000";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
 
@@ -222,7 +222,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Debug.Log("VendorManage start");
                 clearResultData();
 
-                return Request(RequestType.Get, "/on/vendor/manage" + ToSafe(vendorCode) + "/" + ToSafe(queueCode), null, nonce);
+                return Request(RequestType.Get, "/on/vendor/manage/" + ToSafe(queueCode), null, nonce);
             }
 
             private IEnumerator Request(RequestType type, string path, object postData, long nonce)

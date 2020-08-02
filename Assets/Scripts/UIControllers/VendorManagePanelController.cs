@@ -24,6 +24,18 @@ namespace Com.FurtherSystems.vQL.Client
     {
         [SerializeField]
         GameObject content;
+        [SerializeField]
+        Text vendorName;
+        [SerializeField]
+        Text vendorInfo;
+        [SerializeField]
+        Text queueAccessCode;
+        [SerializeField]
+        Text resetButtonText;
+        [SerializeField]
+        Text rowHeader;
+        [SerializeField]
+        VendorManageRowController[] rows;
 
         PanelSwitcher panelSwitcher;
 
@@ -35,6 +47,10 @@ namespace Com.FurtherSystems.vQL.Client
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
+            foreach (var row in rows)
+            {
+                row.Initialize();
+            }
         }
 
         public bool IsShowing()
@@ -127,6 +143,40 @@ namespace Com.FurtherSystems.vQL.Client
         {
             yield return panelSwitcher.PopLoadingDialog();
             yield return panelSwitcher.Fade(PanelType.VendorMain);
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+        
+        public void CallFadeView()
+        {
+            StartCoroutine(FadeView());
+        }
+
+        IEnumerator FadeView()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.View);
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        public void CallFadeNewQueue()
+        {
+            StartCoroutine(NewQueue());
+        }
+
+        IEnumerator NewQueue()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        public void CallFadeAddDummy()
+        {
+            StartCoroutine(AddDummy());
+        }
+
+        IEnumerator AddDummy()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
             yield return panelSwitcher.DepopLoadingDialog();
         }
     }
