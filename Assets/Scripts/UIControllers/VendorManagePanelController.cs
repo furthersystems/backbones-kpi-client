@@ -36,6 +36,8 @@ namespace Com.FurtherSystems.vQL.Client
         Text rowHeader;
         [SerializeField]
         VendorManageRowController[] rows;
+        [SerializeField]
+        VendorQueueQRCode QrCode;
 
         PanelSwitcher panelSwitcher;
 
@@ -70,6 +72,12 @@ namespace Com.FurtherSystems.vQL.Client
             var queueCode = string.Empty;
             if (codeArray.Length > 0) vendorCode = codeArray[0];
             if (codeArray.Length > 1) queueCode = codeArray[1];
+
+            if (!string.IsNullOrEmpty(vendorCode) && !string.IsNullOrEmpty(queueCode))
+            {
+                QrCode.Create(vendorQueueCode, 256,256);
+            }
+
             yield return StartCoroutine(Instance.WebAPI.VendorManage(queueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {

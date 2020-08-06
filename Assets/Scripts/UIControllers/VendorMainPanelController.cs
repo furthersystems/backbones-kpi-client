@@ -24,6 +24,10 @@ namespace Com.FurtherSystems.vQL.Client
     {
         [SerializeField]
         GameObject content;
+        [SerializeField]
+        VendorManageRowController[] rows;
+        [SerializeField]
+        VendorQueueQRCode QrCode;
 
         PanelSwitcher panelSwitcher;
 
@@ -44,7 +48,51 @@ namespace Com.FurtherSystems.vQL.Client
 
         public IEnumerator Show()
         {
+
             content.SetActive(true);
+            foreach (var row in rows)
+            {
+                yield return row.Initialize();
+            }
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+
+            var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
+            var codeArray = vendorQueueCode.Split(',');
+            var vendorCode = string.Empty;
+            var queueCode = string.Empty;
+            if (codeArray.Length > 0) vendorCode = codeArray[0];
+            if (codeArray.Length > 1) queueCode = codeArray[1];
+
+            if (!string.IsNullOrEmpty(vendorCode) && !string.IsNullOrEmpty(queueCode))
+            {
+                QrCode.Create(vendorQueueCode, 256, 256);
+            }
+
+            yield return StartCoroutine(Instance.WebAPI.VendorManage(queueCode, ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorManage>();
+                if (data.ResponseCode == ResponseCode.ResponseOk)
+                {
+                    for (int index = 0; index < 20; index++)
+                    {
+                        rows[index].SetRow(data.Rows[index].KeyCodePrefix, string.Empty);
+                    }
+                }
+                else if (data.ResponseCode == ResponseCode.ResponseOkVendorRequireInitialize)
+                {
+                    // need initialize queue
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                // error
+            }
             yield return null;
         }
 

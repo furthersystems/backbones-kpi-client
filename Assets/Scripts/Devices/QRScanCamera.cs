@@ -10,12 +10,14 @@
 // QR Scan Camera Script
 // </summary>
 //------------------------------------------------------------------------------
+using System.Threading;
 using UnityEngine;
 //using UnityEngine.Android;
 //using UnityEngine.iOS;
 //using UnityEngine.Windows;
 using UnityEngine.UI;
 using ZXing;
+using ZXing.QrCode;
 
 namespace Com.FurtherSystems.vQL.Client
 {
@@ -35,72 +37,100 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         int timeoutSeconds;
 
+        WebCamTexture camTexture;
+        Thread qrThread;
+        bool isQuit;
+        int W, H;
+        //string LastResult;
+        //bool shouldEncodeNow;
+        Color32[] c;
+        Rect screenRect;
+
         ScanStatus status = ScanStatus.None;
         WebCamTexture webCamTexture;
         bool isAbort;
 
+        void OnGUI()
+        {
+            GUI.DrawTexture(screenRect, camTexture, ScaleMode.ScaleToFit);
+        }
+
+        void OnEnable()
+        {
+            if (camTexture != null)
+            {
+                camTexture.Play();
+                W = camTexture.width;
+                H = camTexture.height;
+            }
+        }
+
         void Start()
         {
-            status = ScanStatus.None;
-            StartScan();// temporary check
+            //LastResult = "http://www.google.com";
+            //shouldEncodeNow = true;
+
+            screenRect = new Rect(0, 0, Screen.width, Screen.height);
+
+            camTexture = new WebCamTexture();
+            camTexture.requestedHeight = Screen.height; // 480;
+            camTexture.requestedWidth = Screen.width; //640;
+            OnEnable();
+            qrThread = new Thread(DecodeQR);
+            qrThread.Start();
         }
 
         void Update()
         {
-            switch (status)
+            if (c == null)
             {
-                case ScanStatus.Initialize:
-                    InitializeScan();
+                c = camTexture.GetPixels32();
+            }
+        }
+        
+        void OnApplicationQuit()
+        {
+            isQuit = true;
+        }
+
+        void DecodeQR()
+        {
+            var barcodeReader = new BarcodeReader { AutoRotate = false, TryInverted = false };
+            while (true)
+            {
+                if (isQuit)
                     break;
-                case ScanStatus.Scanning:
-                    LoopScan();
-                    break;
-                case ScanStatus.None:
-                default:
-                    break;
+
+                try
+                {
+                    var result = barcodeReader.Decode(c, W, H);
+                    if (result != null)
+                    {
+                        print(result.Text);
+                    }
+                    Thread.Yield();
+                    Thread.Sleep(200);
+                    c = null;
+                }
+                catch
+                {
+                }
             }
         }
 
-        public void StartScan()
+        void OnDestroy()
         {
-            //Permission.RequestUserPermission(Permission.Camera);
-            isAbort = false;
-            status = ScanStatus.Initialize;
+            qrThread.Abort();
+            camTexture.Stop();
         }
 
-        void InitializeScan()
+        void OnDisable()
         {
-            //if (Permission.HasUserAuthorizedPermission(Permission.Camera))
-            //{
-            var rectTransform = GetComponent<RectTransform>();
-            webCamTexture = new WebCamTexture((int)rectTransform.rect.width, (int)rectTransform.rect.height);
-            webCamTexture.Play();
-            rawImage.texture = webCamTexture;
-            isAbort = false;
-            status = ScanStatus.Scanning;
-            //}
-            // TODO check timeout here.
-            // TODO check abort here.
-        }
-
-        void LoopScan()
-        {
-            var reader = new BarcodeReader();
-            var readed = reader.Decode(webCamTexture.GetPixels32(), webCamTexture.width, webCamTexture.height)?.Text;
-            if (!string.IsNullOrEmpty(readed))
+            if (camTexture != null)
             {
-                text.text = readed;
-                webCamTexture.Stop();
-                // TODO check readed text.
-                status = ScanStatus.None;
+                camTexture.Pause();
             }
-            // TODO check timeout here.
-            // TODO check abort here.
         }
 
-        public void Cancel()
-        {
-            isAbort = true;
-        }
     }
 }
