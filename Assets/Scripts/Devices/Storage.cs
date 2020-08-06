@@ -25,7 +25,7 @@ namespace Com.FurtherSystems.vQL.Client
             PrivateCode,
             SSOs,
             Vendors,
-            VendorCode,
+            VendorQueueCode,
             Latest,
             Errors,
         }
@@ -36,7 +36,7 @@ namespace Com.FurtherSystems.vQL.Client
             { Type.PrivateCode, "priv" },
             { Type.SSOs, "ssos" },
             { Type.Vendors, "vendors" },
-            { Type.VendorCode, "vendor" },
+            { Type.VendorQueueCode, "vendor" },
             { Type.Latest, "latest" },
             { Type.Errors, "errors" },
 

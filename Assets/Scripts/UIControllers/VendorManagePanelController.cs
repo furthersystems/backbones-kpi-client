@@ -47,10 +47,6 @@ namespace Com.FurtherSystems.vQL.Client
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
-            foreach (var row in rows)
-            {
-                row.Initialize();
-            }
         }
 
         public bool IsShowing()
@@ -60,29 +56,44 @@ namespace Com.FurtherSystems.vQL.Client
 
         public IEnumerator Show()
         {
+            content.SetActive(true);
+            foreach (var row in rows)
+            {
+                yield return row.Initialize();
+            }
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            var vendorCode = "/tlqq/GzRXTe/wH9w26DZ7M6bYsC9cOW906EN59yG2s=";
-            var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
-            yield return StartCoroutine(Instance.WebAPI.VendorManage(vendorCode, queueCode, ticks, nonce));
+            
+            var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
+            var codeArray = vendorQueueCode.Split(',');
+            var vendorCode = string.Empty;
+            var queueCode = string.Empty;
+            if (codeArray.Length > 0) vendorCode = codeArray[0];
+            if (codeArray.Length > 1) queueCode = codeArray[1];
+            yield return StartCoroutine(Instance.WebAPI.VendorManage(queueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
-                var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorManage>();
+                if (data.ResponseCode == ResponseCode.ResponseOk)
+                {
+                    for (int index = 0; index < 20; index++)
+                    {
+                        rows[index].SetRow(data.Rows[index].KeyCodePrefix, string.Empty);
+                    }
+                }
+                else if (data.ResponseCode == ResponseCode.ResponseOkVendorRequireInitialize)
+                {
+                    // need initialize queue
+                }
+                else
+                {
 
-                var v = Instance.Vendors.GetVendor(vendorCode);
-                v.VendorCode = vendorCode;
-                v.QueueCode = queueCode;
-                v.PersonsWaitingBefore = data.PersonsWaitingBefore;
-                v.TotalWaiting = data.TotalWaiting;
-                Instance.Vendors.SetVendor(vendorCode, v);
-
-
+                }
             }
             else
             {
                 // error
             }
-            content.SetActive(true);
             yield return null;
         }
 
@@ -166,6 +177,20 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator NewQueue()
         {
             yield return panelSwitcher.PopLoadingDialog();
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            yield return StartCoroutine(Instance.WebAPI.NewQueue(true, ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.NewQueue>();
+                var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
+                var vendorQueue = vendorQueueCode.Split(',')[0];
+                Storage.Save(Storage.Type.VendorQueueCode, vendorQueue + "," + data.QueueCode);
+            }
+            else
+            {
+                // error
+            }
             yield return panelSwitcher.DepopLoadingDialog();
         }
 

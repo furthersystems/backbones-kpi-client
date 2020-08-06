@@ -217,12 +217,32 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Post, "/on/vendor/upgrade", reqBody, nonce);
             }
 
-            public IEnumerator VendorManage(string vendorCode, string queueCode, long ticks, long nonce)
+            public IEnumerator VendorManage(string queueCode, long ticks, long nonce)
             {
                 Debug.Log("VendorManage start");
                 clearResultData();
+                if (!string.IsNullOrEmpty(queueCode))
+                {
+                    queueCode = ToSafe(queueCode);
+                }
+                return Request(RequestType.Get, "/on/vendor/manage/" + queueCode, null, nonce);
+            }
 
-                return Request(RequestType.Get, "/on/vendor/manage/" + ToSafe(queueCode), null, nonce);
+            public IEnumerator NewQueue(bool requireAdmit, long ticks, long nonce)
+            {
+                Debug.Log("new queue start");
+                clearResultData();
+
+                var reqBody = new Messages.Request.NewQueue
+                {
+                    RequireAdmit = requireAdmit,
+                    RequireTimeEstimate = false,
+                    KeyCodeType = 0,
+                    KeyCodePrefix = "",
+                    Ticks = ticks
+                };
+
+                return Request(RequestType.Post, "/on/vendor/queue/new", reqBody, nonce);
             }
 
             private IEnumerator Request(RequestType type, string path, object postData, long nonce)
@@ -308,7 +328,7 @@ namespace Com.FurtherSystems.vQL.Client
                     yield break;
                 }
 
-                Debug.Log(path + " end" + req.downloadHandler.text);
+                Debug.Log(path + " end " + req.downloadHandler.text);
                 Result = true;
             }
         }

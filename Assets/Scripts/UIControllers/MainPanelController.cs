@@ -27,6 +27,8 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         Text total;
         [SerializeField]
+        Text QRText;
+        [SerializeField]
         Text beforePersons;
         [SerializeField]
         Text keyCodePrefix;
@@ -58,36 +60,42 @@ namespace Com.FurtherSystems.vQL.Client
         {
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            //var vendorCode = "RxLkzOB9/Jn6G7J1CPucotixrO7EZhuteI82DorvE0M=";
-            var vendorCode = "6FLFuoN2FVuHlaYdIxPgBwlanSm7m3/0IPZOCqRZZRI=";
-            var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
-            yield return StartCoroutine(Instance.WebAPI.Get(vendorCode, queueCode, ticks, nonce));
+            var currentVendor = Instance.Vendors.GetVendor();
+            yield return StartCoroutine(Instance.WebAPI.Get(currentVendor.VendorCode, currentVendor.QueueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
                 
-                var v = Instance.Vendors.GetVendor(vendorCode);
-                v.VendorCode = vendorCode;
-                v.QueueCode = queueCode;
+                var v = Instance.Vendors.GetVendor(currentVendor.VendorCode);
+                v.VendorCode = currentVendor.VendorCode;
+                v.QueueCode = currentVendor.QueueCode;
                 v.PersonsWaitingBefore = data.PersonsWaitingBefore;
                 v.TotalWaiting = data.TotalWaiting;
-                Instance.Vendors.SetVendor(vendorCode, v);
+                Instance.Vendors.SetVendor(currentVendor.VendorCode, v);
 
                 var vendor = Instance.Vendors.GetVendor();
-                total.text = vendor.TotalWaiting + "人待ち";
-                if (vendor.PersonsWaitingBefore > 0)
+                total.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
+
+                if (vendor.PersonsWaitingBefore > 1)
                 {
                     beforePersonIcon1.SetActive(true);
                     beforePersonIcon2.SetActive(true);
                     beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
-                    keyCodePrefix.text = vendor.KeyCodePrefix;
+                    keyCodePrefix.text = "";
+                    keyCodeSuffix.text = "";
+                }
+                else if (vendor.PersonsWaitingBefore == 1)
+                {
+                    beforePersonIcon2.SetActive(true);
+                    beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
+                    keyCodePrefix.text = "";
                     keyCodeSuffix.text = "";
                 }
                 else
                 {
                     beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(false);
-                    beforePersons.text = "\nあなたの順番が来ました。以下のコードを提示してください。";
+                    beforePersons.text = "順番が来ました。\n以下のコードを提示してください。";
                     keyCodePrefix.text = vendor.KeyCodePrefix;
                     keyCodeSuffix.text = vendor.KeyCodeSuffix;
                 }

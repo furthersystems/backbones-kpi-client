@@ -72,6 +72,19 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
         public string Name;
         public string Caption;
     }
+
+    [Serializable]
+    public class NewQueue : Base
+    {
+        public NewQueue()
+        {
+
+        }
+        public bool RequireAdmit;
+        public bool RequireTimeEstimate;
+        public byte KeyCodeType;
+        public string KeyCodePrefix;
+    }
 }
 
 namespace Com.FurtherSystems.vQL.Client.Messages.Response
@@ -132,6 +145,29 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
     }
 
     [Serializable]
+    public class VendorManageRow
+    {
+        public VendorManageRow()
+        {
+
+        }
+        public string KeyCodePrefix;
+        public int Status;
+    }
+
+    [Serializable]
+    public class VendorManage : Base
+    {
+        public VendorManage()
+        {
+
+        }
+        public int Total;
+        public int QueingTotal;
+        public VendorManageRow[] Rows;
+    }
+
+    [Serializable]
     public class VendorSetting : Base
     {
         public VendorSetting()
@@ -139,5 +175,15 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
 
         }
         public string VendorCode;
+    }
+
+    [Serializable]
+    public class NewQueue : Base
+    {
+        public NewQueue()
+        {
+
+        }
+        public string QueueCode;
     }
 }

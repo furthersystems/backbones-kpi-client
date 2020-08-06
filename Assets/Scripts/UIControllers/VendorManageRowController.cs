@@ -27,10 +27,10 @@ namespace Com.FurtherSystems.vQL.Client
         string KeyCodeSuffix;
         LayoutElement layout;
 
-        public void Initialize()
+        public IEnumerator Initialize()
         {
             layout = GetComponent<LayoutElement>();
-            ClearRow();
+            yield return ClearRow();
         }
 
         public void SetRow(params string []data)
@@ -40,11 +40,16 @@ namespace Com.FurtherSystems.vQL.Client
             StartCoroutine(Show());
         }
 
-        public void ClearRow()
+        public void CallClearRow()
+        {
+            StartCoroutine(ClearRow());
+        }
+
+        IEnumerator ClearRow()
         {
             KeyCodePrefix.text = "";
             KeyCodeSuffix = "";
-            StartCoroutine(Dismiss());
+            yield return StartCoroutine(Dismiss());
         }
 
         IEnumerator Show()
@@ -74,7 +79,7 @@ namespace Com.FurtherSystems.vQL.Client
             //KeyCodeSuffix
             var vendorCode = "/tlqq/GzRXTe/wH9w26DZ7M6bYsC9cOW906EN59yG2s=";
             var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
-            yield return StartCoroutine(Instance.WebAPI.VendorManage(vendorCode, queueCode, ticks, nonce));
+            yield return StartCoroutine(Instance.WebAPI.VendorManage(queueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 //var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();

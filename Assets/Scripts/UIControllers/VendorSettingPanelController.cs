@@ -76,7 +76,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Debug.Log("data.VendorCode: " + data.VendorCode);
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
 
-                Storage.Save(Storage.Type.VendorCode, data.VendorCode);
+                Storage.Save(Storage.Type.VendorQueueCode, data.VendorCode+",");
 
                 yield return panelSwitcher.Fade(PanelType.VendorManage);
                 yield return panelSwitcher.DepopLoadingDialog();

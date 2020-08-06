@@ -31,6 +31,12 @@ namespace Com.FurtherSystems.vQL.Client
         ResponseNgQueryExecuteFailed = 17, // ng, db query execute failed.
         ResponseNgRollbackFailed = 18, // ng, db rollback failed.
         ResponseNgCommitFailed = 19, // ng, db commit failed.
+        ResponseNgSessionNotFound = 20, // ng, session not found.
+        ResponseNgSessionInvalid = 21, // ng, session invalid.
+        ResponseNgRushGardFailed = 22, // ng, session not found.
+        ResponseNgQueueCodeNotfound = 23, // ng, queue code not found.
+        ResponseNgKeyCodeCodeNotfound = 24, // ng, key code not found.
+        ResponseNgSuffixCodeCodeNotfound = 25, // ng, suffix code not found.
         // VendorRegist XX1XX
         ResponseNgVendorNameBlank = 100, // ng, vendor name is blank.
         ResponseNgVendorNameMaxover = 101, // ng, vendor name is capacity over.
@@ -48,13 +54,15 @@ namespace Com.FurtherSystems.vQL.Client
         ResponseOkVendorAccountRecoveredDataInvalid = -110, // ok, vendor account invalid data recovered.
         ResponseOkVendorAccountRecoveredFromSeed = -111, // ok, vendor account recovered from seed.
         ResponseOkVendorAccountRecoveredFromSso = -112, // ok, vendor account recovered from sso.
+        ResponseOkVendorRequireInitialize = -113, // ok, require initialize queue.
         // VendorView XX2XX
         ResponseNgVendorConnotMoveup = 200, // ng, this is top, cannot more moveup
         ResponseNgVendorAlreadyShelved = 201, // ng, already sheleved.
         ResponseNgVendorAlreadyUnshelved = 202, // ng, already unshelved.
         ResponseNgVendorAlreadyCanceled = 203, // ng, already canceled by vendor.
         // VendorDequeueAuth XX3XX
-        ResponseNgVendorCannotAuthDequeue = 300, // ng, user dequeue auth not executed, dequeue auth failed.
+        ResponseNgVendorCannotAuthDequeue = 300, // ng, vendor dequeue auth not executed, dequeue auth failed.
+        ResponseNgVendorDequeueFailed = 301, // ng, vendor dequeue failed.
         // VendorNotify XX4XX
         // VendorAuthOption XX5XX
         ResponseNgVendorAuthLacked = 500, // ng, vendor auth info lacked.
@@ -70,7 +78,8 @@ namespace Com.FurtherSystems.vQL.Client
         ResponseNgUserCannotPending = 704, // ng, this is end. cannot more pending.
         ResponseNgUserAlreadyCanceled = 705, // ng, already canceled by user.
         // UserDequeueAuth XX8XX
-        ResponseNgUserCannotAuthDequeue = 800, // ng, vendor dequeue auth not executed on time, dequeue auth failed.
+        ResponseNgUserCannotAuthDequeue = 800, // ng, dequeue auth not executed on time, dequeue auth failed.
+        ResponseNgUserDequeueFailed = 801, // ng, dequeue failed.
         // UserAuthOption XX9XX
         ResponseNgUserAuthLacked = 900, // ng, user auth info lacked.
         ResponseNgUserAuthFailed = 901, // ng, user auth failed.

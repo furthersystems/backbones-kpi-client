@@ -12,6 +12,7 @@
 //------------------------------------------------------------------------------
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Com.FurtherSystems.vQL.Client
 {
@@ -19,6 +20,8 @@ namespace Com.FurtherSystems.vQL.Client
     {
         [SerializeField]
         GameObject content;
+        [SerializeField]
+        Text qrCode;
 
         PanelSwitcher panelSwitcher;
 
@@ -30,6 +33,7 @@ namespace Com.FurtherSystems.vQL.Client
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
+            qrCode.text = Storage.Load(Storage.Type.VendorQueueCode);
         }
 
         public bool IsShowing()
@@ -60,9 +64,12 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            var vendorCode = "6FLFuoN2FVuHlaYdIxPgBwlanSm7m3/0IPZOCqRZZRI=";
-            //var vendorCode = "RxLkzOB9/Jn6G7J1CPucotixrO7EZhuteI82DorvE0M=";
-            var queueCode = "c2FtcGxlX3F1ZXVlX2NvZGU=";
+            var vendorQueueCode = qrCode.text;
+            var codeArray = vendorQueueCode.Split(',');
+            var vendorCode = string.Empty;
+            var queueCode = string.Empty;
+            if (codeArray.Length > 0) vendorCode = codeArray[0];
+            if (codeArray.Length > 1) queueCode = codeArray[1];
             yield return StartCoroutine(Instance.WebAPI.Enqueue(vendorCode, queueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
