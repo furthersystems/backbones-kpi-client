@@ -13,11 +13,10 @@
 using System.Threading;
 using UnityEngine;
 //using UnityEngine.Android;
-//using UnityEngine.iOS;
+using UnityEngine.iOS;
 //using UnityEngine.Windows;
 using UnityEngine.UI;
 using ZXing;
-using ZXing.QrCode;
 
 namespace Com.FurtherSystems.vQL.Client
 {
