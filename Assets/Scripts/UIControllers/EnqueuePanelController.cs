@@ -13,7 +13,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-
+using ZXing;
 namespace Com.FurtherSystems.vQL.Client
 {
     public class EnqueuePanelController : MonoBehaviour, PanelControllerInterface
@@ -21,8 +21,10 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         GameObject content;
         [SerializeField]
-        Text qrCode;
-
+        RawImage rawImage;
+        string qrCodeText = null;
+        WebCamTexture webCam;
+        bool qrLoaded = false;
         PanelSwitcher panelSwitcher;
 
         public PanelType GetPanelType()
@@ -33,7 +35,6 @@ namespace Com.FurtherSystems.vQL.Client
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
-            qrCode.text = Storage.Load(Storage.Type.VendorQueueCode);
         }
 
         public bool IsShowing()
@@ -44,6 +45,7 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator Show()
         {
             content.SetActive(true);
+            StartCoroutine(Initialize());
             yield return null;
         }
 
@@ -64,7 +66,7 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            var vendorQueueCode = qrCode.text;
+            var vendorQueueCode = qrCodeText;
             var codeArray = vendorQueueCode.Split(',');
             var vendorCode = string.Empty;
             var queueCode = string.Empty;
@@ -104,6 +106,50 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.PopLoadingDialog();
             yield return panelSwitcher.Fade(PanelType.View);
             yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        IEnumerator Initialize()
+        {
+            yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
+            if (Application.HasUserAuthorization(UserAuthorization.WebCam) == false)
+            {
+                Debug.Log("no camera.");
+                yield break;
+            }
+            Debug.Log("camera ok.");
+            WebCamDevice[] devices = WebCamTexture.devices;
+            if (devices == null || devices.Length == 0)
+                yield break;
+            var rect = rawImage.GetComponent<RectTransform>();
+            webCam = new WebCamTexture(devices[0].name, (int)rect.sizeDelta.x, (int)rect.sizeDelta.y, 10);
+            rawImage.texture = webCam;
+            webCam.Play();
+            qrLoaded = false;
+        }
+
+        void Update()
+        {
+            if (qrLoaded) return;
+            if (webCam != null)
+            {
+                qrCodeText = Read(webCam);
+                if (qrCodeText != null)
+                {
+                    Debug.Log("result : " + qrCodeText);
+                    qrLoaded = true;
+                    StartCoroutine(Enqueue());
+                }
+            }
+        }
+
+        string Read(WebCamTexture tex)
+        {
+            BarcodeReader reader = new BarcodeReader();
+            int w = tex.width;
+            int h = tex.height;
+            var pixel32s = tex.GetPixels32();
+            var r = reader.Decode(pixel32s, w, h);
+            return r?.Text;
         }
     }
 }
