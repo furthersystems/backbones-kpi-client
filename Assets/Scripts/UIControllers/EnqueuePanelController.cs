@@ -21,14 +21,16 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         GameObject content;
         [SerializeField]
-        RawImage rawImage;
+        RawImage qrScreen;
         string qrCodeText = null;
         WebCamTexture webCam;
         Quaternion baseRotation;
         bool qrLoaded = false;
         PanelSwitcher panelSwitcher;
         int rotationZ = 0;
-        RectTransform rawImageRotation;
+        RectTransform qrScreenRectTransform;
+        [SerializeField]
+        Text rotateDebugLabel;
 
         public PanelType GetPanelType()
         {
@@ -123,9 +125,9 @@ namespace Com.FurtherSystems.vQL.Client
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
                 yield break;
-            rawImageRotation = rawImage.GetComponent<RectTransform>();
-            webCam = new WebCamTexture(devices[0].name, (int)rawImageRotation.sizeDelta.x, (int)rawImageRotation.sizeDelta.y, 10);
-            rawImage.texture = webCam;
+            qrScreenRectTransform = qrScreen.GetComponent<RectTransform>();
+            webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
+            qrScreen.texture = webCam;
             webCam.Play();
             qrLoaded = false;
         }
@@ -135,18 +137,7 @@ namespace Com.FurtherSystems.vQL.Client
             if (qrLoaded) return;
             if (webCam != null)
             {
-                //switch (Input.deviceOrientation)
-                //{
-                //    case DeviceOrientation.FaceUp:
-                //    case DeviceOrientation.Portrait: rotationZ = -270; break;
-                //    case DeviceOrientation.LandscapeLeft: rotationZ = 0; break;
-                //    case DeviceOrientation.FaceDown:
-                //    case DeviceOrientation.PortraitUpsideDown: rotationZ = -90; break;
-                //    case DeviceOrientation.LandscapeRight: rotationZ = -180; break;
-                //}
-                //var newRotation = new Quaternion(rawImageRotation.rotation.x, rawImageRotation.rotation.y, rotationZ, rawImageRotation.rotation.w);
-                //rawImageRotation.rotation = newRotation;
-                //rawImage.gameObject.transform.rotation = baseRotation * Quaternion.AngleAxis(webCam.videoRotationAngle, Vector3.up);
+                UpdateQRCameraRotation();
                 qrCodeText = Read(webCam);
                 if (qrCodeText != null)
                 {
@@ -155,6 +146,22 @@ namespace Com.FurtherSystems.vQL.Client
                     StartCoroutine(Enqueue());
                 }
             }
+        }
+
+        void UpdateQRCameraRotation()
+        {
+            rotationZ = 0;
+            switch (Input.deviceOrientation)
+            {
+                case DeviceOrientation.FaceUp: break;
+                case DeviceOrientation.Portrait: rotationZ = -90; break;
+                case DeviceOrientation.LandscapeRight: rotationZ = -180; break;
+                case DeviceOrientation.PortraitUpsideDown: rotationZ = 90; break;
+                case DeviceOrientation.LandscapeLeft: rotationZ = 0; break;
+                case DeviceOrientation.FaceDown: break;
+            }
+            rotateDebugLabel.text = Input.deviceOrientation.ToString();
+            qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, rotationZ);
         }
 
         string Read(WebCamTexture tex)
