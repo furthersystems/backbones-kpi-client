@@ -24,8 +24,11 @@ namespace Com.FurtherSystems.vQL.Client
         RawImage rawImage;
         string qrCodeText = null;
         WebCamTexture webCam;
+        Quaternion baseRotation;
         bool qrLoaded = false;
         PanelSwitcher panelSwitcher;
+        int rotationZ = 0;
+        RectTransform rawImageRotation;
 
         public PanelType GetPanelType()
         {
@@ -120,8 +123,8 @@ namespace Com.FurtherSystems.vQL.Client
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
                 yield break;
-            var rect = rawImage.GetComponent<RectTransform>();
-            webCam = new WebCamTexture(devices[0].name, (int)rect.sizeDelta.x, (int)rect.sizeDelta.y, 10);
+            rawImageRotation = rawImage.GetComponent<RectTransform>();
+            webCam = new WebCamTexture(devices[0].name, (int)rawImageRotation.sizeDelta.x, (int)rawImageRotation.sizeDelta.y, 10);
             rawImage.texture = webCam;
             webCam.Play();
             qrLoaded = false;
@@ -132,6 +135,18 @@ namespace Com.FurtherSystems.vQL.Client
             if (qrLoaded) return;
             if (webCam != null)
             {
+                //switch (Input.deviceOrientation)
+                //{
+                //    case DeviceOrientation.FaceUp:
+                //    case DeviceOrientation.Portrait: rotationZ = -270; break;
+                //    case DeviceOrientation.LandscapeLeft: rotationZ = 0; break;
+                //    case DeviceOrientation.FaceDown:
+                //    case DeviceOrientation.PortraitUpsideDown: rotationZ = -90; break;
+                //    case DeviceOrientation.LandscapeRight: rotationZ = -180; break;
+                //}
+                //var newRotation = new Quaternion(rawImageRotation.rotation.x, rawImageRotation.rotation.y, rotationZ, rawImageRotation.rotation.w);
+                //rawImageRotation.rotation = newRotation;
+                //rawImage.gameObject.transform.rotation = baseRotation * Quaternion.AngleAxis(webCam.videoRotationAngle, Vector3.up);
                 qrCodeText = Read(webCam);
                 if (qrCodeText != null)
                 {

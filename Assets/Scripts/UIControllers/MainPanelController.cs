@@ -40,6 +40,7 @@ namespace Com.FurtherSystems.vQL.Client
         GameObject beforePersonIcon2;
 
         PanelSwitcher panelSwitcher;
+        bool breakInterval = false;
 
         public PanelType GetPanelType()
         {
@@ -58,6 +59,27 @@ namespace Com.FurtherSystems.vQL.Client
 
         public IEnumerator Show()
         {
+            yield return ShowQueue();
+            content.SetActive(true);
+            yield return null;
+            StartCoroutine(ShowQueueInterval());
+        }
+
+        public IEnumerator ShowQueueInterval()
+        {
+            breakInterval = false;
+            while (true)
+            {
+                yield return new WaitForSeconds(3.1f);
+                // modal on
+                yield return ShowQueue();
+                // modal off
+                if (breakInterval) break;
+            }
+        }
+
+        IEnumerator ShowQueue()
+        {
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
             var currentVendor = Instance.Vendors.GetVendor();
@@ -65,7 +87,7 @@ namespace Com.FurtherSystems.vQL.Client
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
-                
+
                 var v = Instance.Vendors.GetVendor(currentVendor.VendorCode);
                 v.VendorCode = currentVendor.VendorCode;
                 v.QueueCode = currentVendor.QueueCode;
@@ -104,12 +126,11 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 // error
             }
-            content.SetActive(true);
-            yield return null;
         }
 
         public IEnumerator Dismiss()
         {
+            breakInterval = true;
             content.SetActive(false);
             yield return null;
         }
