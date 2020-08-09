@@ -131,32 +131,47 @@ namespace Com.FurtherSystems.vQL.Client
                 Debug.Log("no camera.");
                 yield break;
             }
-            Debug.Log("camera ok.");
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
                 yield break;
             var outCameraIndex = -1;
-            for (int index = 0; index < devices.Length; index++)
+            if (Application.platform == RuntimePlatform.IPhonePlayer
+            || Application.platform == RuntimePlatform.Android)
             {
-                if (!devices[index].isFrontFacing) {
-                    outCameraIndex = index;
+                for (int index = 0; index < devices.Length; index++)
+                {
+                    if (!devices[index].isFrontFacing)
+                    {
+                        outCameraIndex = index;
+                    }
                 }
+                if (outCameraIndex == -1) yield break;
             }
-            if (outCameraIndex == -1) yield break;
-
+            else
+            {
+                outCameraIndex = 0;
+            }
             webCamDevice = devices[outCameraIndex];
 
+            Debug.Log("camera ok.");
             qrRotateStatus = RotateStatus.Default;
             qrScreenRectTransform = qrScreen.GetComponent<RectTransform>();
             //webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
             webCam = new WebCamTexture(webCamDevice.name);
             qrScreen.texture = webCam;
+            qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
 
             //adjust rotation.
-            qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
-            if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
-            qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, -90);
-
+            if (Application.platform == RuntimePlatform.IPhonePlayer
+            || Application.platform == RuntimePlatform.Android)
+            {
+                if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
+                qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, -90);
+            }
+            else
+            {
+                qrScreenRectTransform.localScale = new Vector3(-1f, 1f, 1f);
+            }
             webCam.Play();
             qrLoaded = false;
         }
