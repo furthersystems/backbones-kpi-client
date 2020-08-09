@@ -16,6 +16,7 @@ using UnityEngine.UI;
 using ZXing;
 namespace Com.FurtherSystems.vQL.Client
 {
+    
     public class EnqueuePanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
@@ -31,6 +32,14 @@ namespace Com.FurtherSystems.vQL.Client
         RectTransform qrScreenRectTransform;
         [SerializeField]
         Text rotateDebugLabel;
+
+        enum RotateStatus
+        {
+            Default,
+            BeforePortrait,
+            BeforeLandscape,
+        }
+        RotateStatus qrRotateStatus = RotateStatus.Default;
 
         public PanelType GetPanelType()
         {
@@ -125,8 +134,15 @@ namespace Com.FurtherSystems.vQL.Client
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
                 yield break;
+            qrRotateStatus = RotateStatus.Default;
             qrScreenRectTransform = qrScreen.GetComponent<RectTransform>();
-            webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
+            //webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
+            webCam = new WebCamTexture(devices[0].name);
+
+            Vector3 angles = qrScreenRectTransform.eulerAngles;
+            angles.y = WebCamTexture.devices[0].isFrontFacing ? 0 : 180;
+            qrScreenRectTransform.eulerAngles = angles;
+
             qrScreen.texture = webCam;
             webCam.Play();
             qrLoaded = false;
@@ -150,18 +166,55 @@ namespace Com.FurtherSystems.vQL.Client
 
         void UpdateQRCameraRotation()
         {
-            rotationZ = 0;
-            switch (Input.deviceOrientation)
+            var orientation = Input.deviceOrientation;
+            switch (orientation)
             {
-                case DeviceOrientation.FaceUp: break;
-                case DeviceOrientation.Portrait: rotationZ = -90; break;
-                case DeviceOrientation.LandscapeRight: rotationZ = -180; break;
-                case DeviceOrientation.PortraitUpsideDown: rotationZ = 90; break;
-                case DeviceOrientation.LandscapeLeft: rotationZ = 0; break;
-                case DeviceOrientation.FaceDown: break;
+                case DeviceOrientation.Unknown:
+                case DeviceOrientation.FaceUp:
+                case DeviceOrientation.FaceDown:
+                    if (qrRotateStatus != RotateStatus.Default) return;
+                    orientation = DeviceOrientation.Portrait;
+                    break;
+                default:
+                    break;
+            }
+            rotationZ = 0;
+            switch (orientation)
+            {
+                case DeviceOrientation.Portrait:
+                    rotationZ = -90;
+                    qrRotateStatus = RotateStatus.BeforePortrait;
+                    break;
+                case DeviceOrientation.LandscapeRight:
+                    rotationZ = -180;
+                    qrRotateStatus = RotateStatus.BeforeLandscape;
+                    break;
+                case DeviceOrientation.PortraitUpsideDown:
+                    rotationZ = 90;
+                    qrRotateStatus = RotateStatus.BeforePortrait;
+                    break;
+                case DeviceOrientation.LandscapeLeft:
+                    rotationZ = 0;
+                    qrRotateStatus = RotateStatus.BeforeLandscape;
+                    break;
+                default: break;
+            }
+
+            switch (orientation)
+            {
+                case DeviceOrientation.Portrait:
+                case DeviceOrientation.PortraitUpsideDown: qrScreenRectTransform.sizeDelta = new Vector2(800, 600); break;
+                case DeviceOrientation.LandscapeRight:
+                case DeviceOrientation.LandscapeLeft: qrScreenRectTransform.sizeDelta = new Vector2(800, 600); break;
+                default: break;
             }
             rotateDebugLabel.text = Input.deviceOrientation.ToString();
             qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, rotationZ);
+        }
+
+        void UpdateQRCameraRotation2()
+        {
+
         }
 
         string Read(WebCamTexture tex)
