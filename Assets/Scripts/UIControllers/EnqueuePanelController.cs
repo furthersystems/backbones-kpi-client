@@ -151,6 +151,12 @@ namespace Com.FurtherSystems.vQL.Client
             //webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
             webCam = new WebCamTexture(webCamDevice.name);
             qrScreen.texture = webCam;
+
+            //adjust rotation.
+            qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
+            if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
+            qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, -90);
+
             webCam.Play();
             qrLoaded = false;
         }
@@ -160,7 +166,7 @@ namespace Com.FurtherSystems.vQL.Client
             if (qrLoaded) return;
             if (webCam != null)
             {
-                UpdateQRCameraRotation();
+                //UpdateQRCameraAutoRotation();
                 qrCodeText = Read(webCam);
                 if (qrCodeText != null)
                 {
@@ -171,7 +177,7 @@ namespace Com.FurtherSystems.vQL.Client
             }
         }
 
-        void UpdateQRCameraRotation()
+        void UpdateQRCameraAutoRotation()
         {
             var orientation = Input.deviceOrientation;
             switch (orientation)

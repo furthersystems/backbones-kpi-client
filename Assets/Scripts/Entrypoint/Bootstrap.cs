@@ -28,6 +28,11 @@ namespace Com.FurtherSystems.vQL.Client
             // TODO check network connectivity.
             // TODO error dialog here & exit
 
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToLandscapeLeft = false;
+            Screen.autorotateToLandscapeRight = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+
             var ticks = Instance.WebAPIClient.GetUnixTime();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var seed = string.Empty;
