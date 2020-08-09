@@ -212,15 +212,18 @@ namespace Com.FurtherSystems.vQL.Client
                 case DeviceOrientation.Portrait:
                 case DeviceOrientation.PortraitUpsideDown:
                     qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
-                    if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
+                    // qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f); // android mirror logic 
                     break;
                 case DeviceOrientation.LandscapeRight:
                 case DeviceOrientation.LandscapeLeft:
                     qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
-                    if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(-1f, 1f, 1f);
+                    // qrScreenRectTransform.localScale = new Vector3(-1f, 1f, 1f); // android mirror logic 
                     break;
                 default: break;
             }
+
+            if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
+
             var isCameraType = webCamDevice.isFrontFacing ? "isFaceCamera" : "isOutCamera" ;
             rotateDebugLabel.text = isCameraType + ":" + Input.deviceOrientation.ToString();
             qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, rotationZ);
