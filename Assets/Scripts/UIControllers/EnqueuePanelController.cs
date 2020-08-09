@@ -30,6 +30,7 @@ namespace Com.FurtherSystems.vQL.Client
         PanelSwitcher panelSwitcher;
         int rotationZ = 0;
         RectTransform qrScreenRectTransform;
+        WebCamDevice webCamDevice;
         [SerializeField]
         Text rotateDebugLabel;
 
@@ -134,15 +135,21 @@ namespace Com.FurtherSystems.vQL.Client
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
                 yield break;
+            var outCameraIndex = -1;
+            for (int index = 0; index < devices.Length; index++)
+            {
+                if (!devices[index].isFrontFacing) {
+                    outCameraIndex = index;
+                }
+            }
+            if (outCameraIndex == -1) yield break;
+
+            webCamDevice = devices[outCameraIndex];
+
             qrRotateStatus = RotateStatus.Default;
             qrScreenRectTransform = qrScreen.GetComponent<RectTransform>();
             //webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
-            webCam = new WebCamTexture(devices[0].name);
-
-            Vector3 angles = qrScreenRectTransform.eulerAngles;
-            angles.y = WebCamTexture.devices[0].isFrontFacing ? 0 : 180;
-            qrScreenRectTransform.eulerAngles = angles;
-
+            webCam = new WebCamTexture(webCamDevice.name);
             qrScreen.texture = webCam;
             webCam.Play();
             qrLoaded = false;
@@ -203,18 +210,20 @@ namespace Com.FurtherSystems.vQL.Client
             switch (orientation)
             {
                 case DeviceOrientation.Portrait:
-                case DeviceOrientation.PortraitUpsideDown: qrScreenRectTransform.sizeDelta = new Vector2(800, 600); break;
+                case DeviceOrientation.PortraitUpsideDown:
+                    qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
+                    if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(1f, -1f, 1f);
+                    break;
                 case DeviceOrientation.LandscapeRight:
-                case DeviceOrientation.LandscapeLeft: qrScreenRectTransform.sizeDelta = new Vector2(800, 600); break;
+                case DeviceOrientation.LandscapeLeft:
+                    qrScreenRectTransform.sizeDelta = new Vector2(800, 600);
+                    if (Application.platform == RuntimePlatform.IPhonePlayer) qrScreenRectTransform.localScale = new Vector3(-1f, 1f, 1f);
+                    break;
                 default: break;
             }
-            rotateDebugLabel.text = Input.deviceOrientation.ToString();
+            var isCameraType = webCamDevice.isFrontFacing ? "isFaceCamera" : "isOutCamera" ;
+            rotateDebugLabel.text = isCameraType + ":" + Input.deviceOrientation.ToString();
             qrScreenRectTransform.rotation = Quaternion.Euler(qrScreenRectTransform.rotation.x, qrScreenRectTransform.rotation.y, rotationZ);
-        }
-
-        void UpdateQRCameraRotation2()
-        {
-
         }
 
         string Read(WebCamTexture tex)
