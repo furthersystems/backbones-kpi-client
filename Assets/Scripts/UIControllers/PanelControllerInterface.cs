@@ -19,7 +19,7 @@ namespace Com.FurtherSystems.vQL.Client
     {
         Enqueue,
         View,
-        Setting,
+        Upgrade,
         Main,
         VendorSetting,
         VendorManage,

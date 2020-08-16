@@ -32,6 +32,8 @@ namespace Com.FurtherSystems.vQL.Client
         RectTransform qrScreenRectTransform;
         WebCamDevice webCamDevice;
         [SerializeField]
+        Button enqueueDebugButton;
+        [SerializeField]
         Text rotateDebugLabel;
 
         enum RotateStatus
@@ -81,7 +83,8 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            var vendorQueueCode = qrCodeText;
+            //var vendorQueueCode = qrCodeText;
+            var vendorQueueCode = "XMh6y16dUg3Vi1TGgXmSfD0pVDhGVwshsTzNQVfaUqw=,SUIVQNchgj2DfAzQ1g3PBAGp023Fm+ldRSuqJJc5iF8=";
             var codeArray = vendorQueueCode.Split(',');
             var vendorCode = string.Empty;
             var queueCode = string.Empty;
@@ -92,9 +95,13 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.Enqueue>();
 
+                Debug.Log("name"+data.VendorName);
+                Debug.Log("caption"+data.VendorCaption);
                 var vendor = new Vendor();
                 vendor.VendorCode = vendorCode;
                 vendor.QueueCode = queueCode;
+                vendor.VendorName = data.VendorName;
+                vendor.VendorCaption = data.VendorCaption;
                 vendor.KeyCodePrefix = data.KeyCodePrefix;
                 vendor.KeyCodeSuffix = data.KeyCodeSuffix;
                 vendor.PersonsWaitingBefore = data.PersonsWaitingBefore;
@@ -129,11 +136,17 @@ namespace Com.FurtherSystems.vQL.Client
             if (Application.HasUserAuthorization(UserAuthorization.WebCam) == false)
             {
                 Debug.Log("no camera.");
+                enqueueDebugButton.gameObject.SetActive(true);
                 yield break;
             }
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
+            {
+                Debug.Log("no camera.");
+                enqueueDebugButton.gameObject.SetActive(true);
                 yield break;
+            }
+            enqueueDebugButton.gameObject.SetActive(false);
             var outCameraIndex = -1;
             if (Application.platform == RuntimePlatform.IPhonePlayer
             || Application.platform == RuntimePlatform.Android)
@@ -156,7 +169,6 @@ namespace Com.FurtherSystems.vQL.Client
             Debug.Log("camera ok.");
             qrRotateStatus = RotateStatus.Default;
             qrScreenRectTransform = qrScreen.GetComponent<RectTransform>();
-            //webCam = new WebCamTexture(devices[0].name, (int)qrScreenRectTransform.sizeDelta.x, (int)qrScreenRectTransform.sizeDelta.y, 10);
             webCam = new WebCamTexture(webCamDevice.name);
             qrScreen.texture = webCam;
             qrScreenRectTransform.sizeDelta = new Vector2(800, 600);

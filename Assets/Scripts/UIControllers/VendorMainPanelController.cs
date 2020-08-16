@@ -25,7 +25,13 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         GameObject content;
         [SerializeField]
-        VendorManageRowController[] rows;
+        Text vendorName;
+        [SerializeField]
+        Text vendorInfo;
+        [SerializeField]
+        Text queueAccessCode;
+        [SerializeField]
+        VendorMainRowController[] cells;
         [SerializeField]
         VendorQueueQRCode QrCode;
 
@@ -48,14 +54,11 @@ namespace Com.FurtherSystems.vQL.Client
 
         public IEnumerator Show()
         {
-
             content.SetActive(true);
-            foreach (var row in rows)
+            foreach (var row in cells)
             {
                 yield return row.Initialize();
             }
-            var nonce = Instance.WebAPIClient.GetTimestamp();
-            var ticks = Instance.WebAPIClient.GetUnixTime();
 
             var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
             var codeArray = vendorQueueCode.Split(',');
@@ -64,20 +67,36 @@ namespace Com.FurtherSystems.vQL.Client
             if (codeArray.Length > 0) vendorCode = codeArray[0];
             if (codeArray.Length > 1) queueCode = codeArray[1];
 
-            if (!string.IsNullOrEmpty(vendorCode) && !string.IsNullOrEmpty(queueCode))
-            {
-                QrCode.Create(vendorQueueCode, 256, 256);
-            }
+            if (string.IsNullOrEmpty(vendorCode) || string.IsNullOrEmpty(queueCode)) yield break;
 
-            yield return StartCoroutine(Instance.WebAPI.VendorManage(queueCode, ticks, nonce));
+            QrCode.Create(vendorQueueCode, 256, 256);
+            var page = 0;
+            yield return ShowQueue(queueCode, page);
+        }
+
+        public IEnumerator Dismiss()
+        {
+            content.SetActive(false);
+            yield return null;
+        }
+
+        public IEnumerator ShowQueue(string queueCode, int page)
+        {
+            if (string.IsNullOrEmpty(queueCode)) yield break;
+
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            yield return StartCoroutine(Instance.WebAPI.VendorShowQueue(queueCode, page, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
-                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorManage>();
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorShowQueue>();
                 if (data.ResponseCode == ResponseCode.ResponseOk)
                 {
-                    for (int index = 0; index < 20; index++)
+                    var index = 0;
+                    foreach (var row in data.Rows)
                     {
-                        rows[index].SetRow(data.Rows[index].KeyCodePrefix, string.Empty);
+                            cells[index].SetRow(row.KeyCodePrefix, string.Empty);
+                            index++;
                     }
                 }
                 else if (data.ResponseCode == ResponseCode.ResponseOkVendorRequireInitialize)
@@ -93,12 +112,6 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 // error
             }
-            yield return null;
-        }
-
-        public IEnumerator Dismiss()
-        {
-            content.SetActive(false);
             yield return null;
         }
 

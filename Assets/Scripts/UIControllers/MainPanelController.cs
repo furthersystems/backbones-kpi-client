@@ -25,7 +25,11 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         GameObject content;
         [SerializeField]
-        Text total;
+        Text VendorName;
+        [SerializeField]
+        Text totalEnqueue;
+        [SerializeField]
+        Text queueLength;
         [SerializeField]
         Text QRText;
         [SerializeField]
@@ -96,7 +100,8 @@ namespace Com.FurtherSystems.vQL.Client
                 Instance.Vendors.SetVendor(currentVendor.VendorCode, v);
 
                 var vendor = Instance.Vendors.GetVendor();
-                total.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
+                queueLength.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
+                //totalEnqueue.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
 
                 if (vendor.PersonsWaitingBefore > 1)
                 {

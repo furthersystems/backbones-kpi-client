@@ -1,5 +1,5 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="VendorManageRowController.cs" company="FurtherSystem Co.,Ltd.">
+// <copyright file="ViewRowController.cs" company="FurtherSystem Co.,Ltd.">
 // Copyright (C) 2020 FurtherSystem Co.,Ltd.
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
@@ -7,7 +7,7 @@
 // <author>FurtherSystem Co.,Ltd.</author>
 // <email>info@furthersystem.com</email>
 // <summary>
-// Vendor Manage Row Controller
+// View Row Controller
 // </summary>
 //------------------------------------------------------------------------------
 using System.Collections;
@@ -17,14 +17,18 @@ using UnityEngine.UI;
 namespace Com.FurtherSystems.vQL.Client
 {
     [RequireComponent(typeof(LayoutElement))]
-    public class VendorManageRowController : MonoBehaviour
+    public class ViewRowController : MonoBehaviour
     {
         [SerializeField]
         GameObject content;
         [SerializeField]
-        Text KeyCodePrefix;
+        ViewPanelController parentPanel;
         [SerializeField]
-        string KeyCodeSuffix;
+        string vendorCode;
+        [SerializeField]
+        Text vendorName;
+        [SerializeField]
+        Text waitingBefore;
         LayoutElement layout;
 
         public IEnumerator Initialize()
@@ -33,10 +37,13 @@ namespace Com.FurtherSystems.vQL.Client
             yield return ClearRow();
         }
 
-        public void SetRow(params string []data)
+        public void SetRow(params string[] data)
         {
-            KeyCodePrefix.text = data[0];
-            KeyCodeSuffix = data[1];
+            vendorCode = data[0];
+            vendorName.text = data[1];
+            if (!string.IsNullOrEmpty(data[2])) { 
+            waitingBefore.text = "あと" + data[2] + "人";
+            }
             StartCoroutine(Show());
         }
 
@@ -47,8 +54,9 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator ClearRow()
         {
-            KeyCodePrefix.text = "";
-            KeyCodeSuffix = "";
+            vendorCode = string.Empty;
+            vendorName.text = "";
+            waitingBefore.text = "";
             yield return StartCoroutine(Dismiss());
         }
 
@@ -66,42 +74,16 @@ namespace Com.FurtherSystems.vQL.Client
             yield return null;
         }
 
-        public void CallPass()
+        public void CallFadeMain()
         {
-            StartCoroutine(Pass());
+            StartCoroutine(FadeMain());
         }
 
-        IEnumerator Pass()
+        IEnumerator FadeMain()
         {
-            var nonce = Instance.WebAPIClient.GetTimestamp();
-            var ticks = Instance.WebAPIClient.GetUnixTime();
-
-            var force = true;
-            yield return StartCoroutine(Instance.WebAPI.VendorDequeue(KeyCodePrefix.text, KeyCodeSuffix, force, ticks, nonce));
-            if (Instance.WebAPI.Result)
-            {
-                var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorDequeue>();
-                if (data.Updated) Dismiss();
-                // error dialog
-            }
-            else
-            {
-                // error dialog
-            }
-            yield return null;
-            content.SetActive(true);
-        }
-
-        public void CallNotify()
-        {
-            StartCoroutine(Notify());
-        }
-
-        IEnumerator Notify()
-        {
-            //KeyCodePrefix
-            //KeyCodeSuffix
-            yield return null;
+            Instance.Vendors.SetCurrentKey(vendorCode);
+            parentPanel.CallFadeMain();
+            yield return Dismiss();
         }
     }
 }

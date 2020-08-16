@@ -24,6 +24,12 @@ namespace Com.FurtherSystems.vQL.Client
     {
         [SerializeField]
         GameObject content;
+        [SerializeField]
+        ViewRowController[] rows;
+        [SerializeField]
+        GameObject manageIcon;
+        [SerializeField]
+        GameObject upgradeIcon;
 
         PanelSwitcher panelSwitcher;
 
@@ -45,12 +51,40 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator Show()
         {
             content.SetActive(true);
+            foreach (var row in rows)
+            {
+                yield return row.Initialize();
+            }
+            yield return ShowVendors();
             yield return null;
         }
 
         public IEnumerator Dismiss()
         {
             content.SetActive(false);
+            yield return null;
+        }
+
+        public void CallFadeMain()
+        {
+            StartCoroutine(FadeMain());
+        }
+
+        IEnumerator FadeMain()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.Main);
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        public IEnumerator ShowVendors()
+        {
+            var index = 0;
+            foreach (var v in Instance.Vendors.GetVendors())
+            {
+                rows[index].SetRow(v.VendorCode, v.VendorName, "");
+                index++;
+            }
             yield return null;
         }
 
@@ -66,15 +100,29 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
-        public void CallFadeSetting()
+        public void CallFadeUpgrade()
         {
-            StartCoroutine(FadeSetting());
+            StartCoroutine(FadeUpgrade());
         }
 
-        IEnumerator FadeSetting()
+        IEnumerator FadeUpgrade()
         {
             yield return panelSwitcher.PopLoadingDialog();
-            yield return panelSwitcher.Fade(PanelType.Setting);
+            yield return panelSwitcher.Fade(PanelType.Upgrade);
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        public void CallFadeVendorManage()
+        {
+            StartCoroutine(FadeVendorManage());
+        }
+
+        IEnumerator FadeVendorManage()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
+            // if not regist?
+            //panelSwitcher.FadeRegist();
+            yield return panelSwitcher.Fade(PanelType.VendorManage);
             yield return panelSwitcher.DepopLoadingDialog();
         }
     }

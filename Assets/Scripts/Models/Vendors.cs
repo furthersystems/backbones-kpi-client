@@ -70,6 +70,23 @@ namespace Com.FurtherSystems.vQL.Client
             return JsonUtility.ToJson(instance);
         }
 
+        public bool SetCurrentKey(string vendorCode)
+        {
+            var notFound = true;
+            foreach (var v in instance.vendors)
+            {
+                if (v.VendorCode == vendorCode)
+                {
+                    notFound = false;
+                    break;
+                }
+            }
+            if (notFound) return false;
+
+            instance.CurrentCode = vendorCode;
+            return true;
+        }
+
         public void SetVendor(string vendorCode, Vendor vendor)
         {
             var index = GetIndex(vendorCode);
@@ -103,6 +120,11 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 return new Vendor();
             }
+        }
+
+        public Vendor[] GetVendors()
+        {
+            return instance.vendors;
         }
 
         private int GetIndex(string vendorCode)

@@ -41,7 +41,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Delete,
             }
 
-            const string Url = "http://localhost:7000";
+            const string Url = "http://192.168.1.30:7000";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
 
@@ -217,7 +217,7 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Post, "/on/vendor/upgrade", reqBody, nonce);
             }
 
-            public IEnumerator VendorManage(string queueCode, long ticks, long nonce)
+            public IEnumerator VendorManage(string queueCode,int page, long ticks, long nonce)
             {
                 Debug.Log("VendorManage start");
                 clearResultData();
@@ -225,7 +225,7 @@ namespace Com.FurtherSystems.vQL.Client
                 {
                     queueCode = ToSafe(queueCode);
                 }
-                return Request(RequestType.Get, "/on/vendor/manage/" + queueCode, null, nonce);
+                return Request(RequestType.Get, "/on/vendor/manage/" + queueCode +"/"+page.ToString(), null, nonce);
             }
 
             public IEnumerator NewQueue(bool requireAdmit, long ticks, long nonce)
@@ -243,6 +243,33 @@ namespace Com.FurtherSystems.vQL.Client
                 };
 
                 return Request(RequestType.Post, "/on/vendor/queue/new", reqBody, nonce);
+            }
+
+            public IEnumerator VendorDequeue(string keyCodePrefix, string keyCodeSuffix, bool force, long ticks, long nonce)
+            {
+                Debug.Log("VendorDequeue start");
+                clearResultData();
+
+                var reqBody = new Messages.Request.VendorDequeue
+                {
+                    Force = force,
+                    KeyCodePrefix = keyCodePrefix,
+                    KeyCodeSuffix = keyCodeSuffix,
+                    Ticks = ticks
+                };
+
+                return Request(RequestType.Post, "/on/vendor/dequeue", reqBody, nonce);
+            }
+
+            public IEnumerator VendorShowQueue(string queueCode, int page, long ticks, long nonce)
+            {
+                Debug.Log("VendorShowQueue start");
+                clearResultData();
+                if (!string.IsNullOrEmpty(queueCode))
+                {
+                    queueCode = ToSafe(queueCode);
+                }
+                return Request(RequestType.Get, "/on/vendor/queue/" + queueCode + "/" + page.ToString(), null, nonce);
             }
 
             private IEnumerator Request(RequestType type, string path, object postData, long nonce)

@@ -85,6 +85,18 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
         public byte KeyCodeType;
         public string KeyCodePrefix;
     }
+
+    [Serializable]
+    public class VendorDequeue : Base
+    {
+        public VendorDequeue()
+        {
+
+        }
+        public bool Force;
+        public string KeyCodePrefix;
+        public string KeyCodeSuffix;
+    }
 }
 
 namespace Com.FurtherSystems.vQL.Client.Messages.Response
@@ -126,6 +138,8 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
         {
 
         }
+        public string VendorName;
+        public string VendorCaption;
         public string KeyCodePrefix;
         public string KeyCodeSuffix;
         public int PersonsWaitingBefore;
@@ -185,5 +199,27 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
 
         }
         public string QueueCode;
+    }
+
+    [Serializable]
+    public class VendorDequeue : Base
+    {
+        public VendorDequeue()
+        {
+
+        }
+        public bool Updated;
+    }
+
+    [Serializable]
+    public class VendorShowQueue : Base
+    {
+        public VendorShowQueue()
+        {
+
+        }
+        public int Total;
+        public int QueingTotal;
+        public VendorManageRow[] Rows;
     }
 }

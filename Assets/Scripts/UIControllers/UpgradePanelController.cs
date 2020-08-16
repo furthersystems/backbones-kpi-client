@@ -20,7 +20,7 @@ using System.IO;
 
 namespace Com.FurtherSystems.vQL.Client
 {
-    public class SettingPanelController : MonoBehaviour, PanelControllerInterface
+    public class UpgradePanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
         GameObject content;
@@ -29,7 +29,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         public PanelType GetPanelType()
         {
-            return PanelType.Setting;
+            return PanelType.Upgrade;
         }
 
         public void Initialize(PanelSwitcher switcher)
