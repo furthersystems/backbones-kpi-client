@@ -13,6 +13,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Android;
 using ZXing;
 namespace Com.FurtherSystems.vQL.Client
 {
@@ -23,7 +24,7 @@ namespace Com.FurtherSystems.vQL.Client
         GameObject content;
         [SerializeField]
         RawImage qrScreen;
-        string qrCodeText = null;
+        string qrCodeText = string.Empty;
         WebCamTexture webCam;
         Quaternion baseRotation;
         bool qrLoaded = false;
@@ -35,6 +36,9 @@ namespace Com.FurtherSystems.vQL.Client
         Button enqueueDebugButton;
         [SerializeField]
         Text rotateDebugLabel;
+
+        // for android only
+        bool cameraPermissionRequesting;
 
         enum RotateStatus
         {
@@ -52,6 +56,7 @@ namespace Com.FurtherSystems.vQL.Client
         public void Initialize(PanelSwitcher switcher)
         {
             panelSwitcher = switcher;
+
         }
 
         public bool IsShowing()
@@ -83,8 +88,7 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
-            //var vendorQueueCode = qrCodeText;
-            var vendorQueueCode = "XMh6y16dUg3Vi1TGgXmSfD0pVDhGVwshsTzNQVfaUqw=,SUIVQNchgj2DfAzQ1g3PBAGp023Fm+ldRSuqJJc5iF8=";
+            var vendorQueueCode = qrCodeText;
             var codeArray = vendorQueueCode.Split(',');
             var vendorCode = string.Empty;
             var queueCode = string.Empty;
@@ -132,18 +136,32 @@ namespace Com.FurtherSystems.vQL.Client
 
         IEnumerator Initialize()
         {
-            yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
-            if (Application.HasUserAuthorization(UserAuthorization.WebCam) == false)
+            // for android only
+            if (Application.platform == RuntimePlatform.Android)
             {
-                Debug.Log("no camera.");
-                enqueueDebugButton.gameObject.SetActive(true);
-                yield break;
+                if (!Permission.HasUserAuthorizedPermission(Permission.Camera))
+                {
+                    yield return RequestAndroidCameraPermission();
+                }
             }
+            else
+            {
+                yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
+                if (Application.HasUserAuthorization(UserAuthorization.WebCam) == false)
+                {
+                    Debug.Log("no camera.");
+                    enqueueDebugButton.gameObject.SetActive(true);
+                    qrCodeText = Storage.Load(Storage.Type.VendorQueueCode);
+                    yield break;
+                }
+            }
+
             WebCamDevice[] devices = WebCamTexture.devices;
             if (devices == null || devices.Length == 0)
             {
                 Debug.Log("no camera.");
                 enqueueDebugButton.gameObject.SetActive(true);
+                qrCodeText = Storage.Load(Storage.Type.VendorQueueCode);
                 yield break;
             }
             enqueueDebugButton.gameObject.SetActive(false);
@@ -202,6 +220,36 @@ namespace Com.FurtherSystems.vQL.Client
                     StartCoroutine(Enqueue());
                 }
             }
+        }
+
+        IEnumerator OnApplicationFocus(bool hasFocus)
+        {
+            yield return null;
+
+            if (cameraPermissionRequesting && hasFocus)
+            {
+                cameraPermissionRequesting = false;
+            }
+        }
+
+        // for android only
+        IEnumerator RequestAndroidCameraPermission()
+        {
+            cameraPermissionRequesting = true;
+            Permission.RequestUserPermission(Permission.Camera);
+            float timeElapsed = 0;
+            while (cameraPermissionRequesting)
+            {
+                if (timeElapsed > 0.5f)
+                {
+                    cameraPermissionRequesting = false;
+                    yield break;
+                }
+                timeElapsed += Time.deltaTime;
+
+                yield return null;
+            }
+            yield break;
         }
 
         void UpdateQRCameraAutoRotation()

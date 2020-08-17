@@ -99,9 +99,11 @@ namespace Com.FurtherSystems.vQL.Client
                 v.TotalWaiting = data.TotalWaiting;
                 Instance.Vendors.SetVendor(currentVendor.VendorCode, v);
 
+                VendorName.text = data.Name;
+
                 var vendor = Instance.Vendors.GetVendor();
-                queueLength.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
-                //totalEnqueue.text = "総入場数" + vendor.TotalWaiting + "\n総行列待ち" + vendor.TotalWaiting;
+                //queueLength.text = "行列人数: " + vendor.TotalWaiting;
+                //totalEnqueue.text = "総積算数: " + vendor.TotalWaiting;
 
                 if (vendor.PersonsWaitingBefore > 1)
                 {
@@ -124,7 +126,7 @@ namespace Com.FurtherSystems.vQL.Client
                     beforePersonIcon2.SetActive(false);
                     beforePersons.text = "順番が来ました。\n以下のコードを提示してください。";
                     keyCodePrefix.text = vendor.KeyCodePrefix;
-                    keyCodeSuffix.text = vendor.KeyCodeSuffix;
+                    keyCodeSuffix.text = vendor.KeyCodeSuffix.ToUpper();
                 }
             }
             else

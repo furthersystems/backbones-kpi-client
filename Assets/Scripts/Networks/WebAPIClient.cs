@@ -202,19 +202,38 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Get, "/on/queue/"+ ToSafe(vendorCode) + "/"+ ToSafe(queueCode), null, nonce);
             }
 
-            public IEnumerator SetVendor(string name, string caption, string sessionId, string ident, long ticks, long nonce)
+            public IEnumerator UpgradeVendor(string name, string caption, bool requireInitQueue, bool requireAdmit, string ident, long ticks, long nonce)
             {
-                Debug.Log("SetVendor start");
+                Debug.Log("UpgradeVendor start");
                 clearResultData();
 
                 var reqBody = new Messages.Request.VendorSetting
                 {
                     Name = name,
                     Caption = caption,
+                    RequireInitQueue = requireInitQueue,
+                    RequireAdmit = requireAdmit,
                     Ticks = ticks
                 };
 
                 return Request(RequestType.Post, "/on/vendor/upgrade", reqBody, nonce);
+            }
+
+            public IEnumerator UpdateVendor(string name, string caption, bool requireInitQueue, bool requireAdmit, string ident, long ticks, long nonce)
+            {
+                Debug.Log("UpdateVendor start");
+                clearResultData();
+
+                var reqBody = new Messages.Request.VendorSetting
+                {
+                    Name = name,
+                    Caption = caption,
+                    RequireInitQueue = requireInitQueue,
+                    RequireAdmit = requireAdmit,
+                    Ticks = ticks
+                };
+
+                return Request(RequestType.Post, "/on/vendor/update", reqBody, nonce);
             }
 
             public IEnumerator VendorManage(string queueCode,int page, long ticks, long nonce)
@@ -226,23 +245,6 @@ namespace Com.FurtherSystems.vQL.Client
                     queueCode = ToSafe(queueCode);
                 }
                 return Request(RequestType.Get, "/on/vendor/manage/" + queueCode +"/"+page.ToString(), null, nonce);
-            }
-
-            public IEnumerator NewQueue(bool requireAdmit, long ticks, long nonce)
-            {
-                Debug.Log("new queue start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.NewQueue
-                {
-                    RequireAdmit = requireAdmit,
-                    RequireTimeEstimate = false,
-                    KeyCodeType = 0,
-                    KeyCodePrefix = "",
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/vendor/queue/new", reqBody, nonce);
             }
 
             public IEnumerator VendorDequeue(string keyCodePrefix, string keyCodeSuffix, bool force, long ticks, long nonce)
@@ -270,6 +272,12 @@ namespace Com.FurtherSystems.vQL.Client
                     queueCode = ToSafe(queueCode);
                 }
                 return Request(RequestType.Get, "/on/vendor/queue/" + queueCode + "/" + page.ToString(), null, nonce);
+            }
+
+            public IEnumerator VendorEnqueueUser(long ticks, long nonce)
+            {
+                Debug.Log("VendorEnqueueUser start");
+                return Request(RequestType.Post, "/on/vendor/queue/dummy", null, nonce);
             }
 
             private IEnumerator Request(RequestType type, string path, object postData, long nonce)

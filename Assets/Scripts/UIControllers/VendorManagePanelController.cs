@@ -27,17 +27,18 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         Text vendorName;
         [SerializeField]
-        Text vendorInfo;
+        Text queingTotalLabel;
         [SerializeField]
-        Text queueAccessCode;
+        Text TotalLabel;
         [SerializeField]
-        Text resetButtonText;
+        Text queueCodeLabel;
         [SerializeField]
         Text rowHeader;
         [SerializeField]
         VendorManageRowController[] rows;
         [SerializeField]
         VendorQueueQRCode QrCode;
+        bool breakInterval = false;
 
         PanelSwitcher panelSwitcher;
 
@@ -59,6 +60,31 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator Show()
         {
             content.SetActive(true);
+            yield return ShowQueue();
+        }
+
+        public IEnumerator Dismiss()
+        {
+            breakInterval = true;
+            content.SetActive(false);
+            yield return null;
+        }
+
+        public IEnumerator ShowQueueInterval()
+        {
+            breakInterval = false;
+            while (true)
+            {
+                yield return new WaitForSeconds(3.1f);
+                // modal on
+                yield return ShowQueue();
+                // modal off
+                if (breakInterval) break;
+            }
+        }
+
+        public IEnumerator ShowQueue()
+        {
             foreach (var row in rows)
             {
                 yield return row.Initialize();
@@ -75,17 +101,6 @@ namespace Com.FurtherSystems.vQL.Client
 
             QrCode.Create(vendorQueueCode, 256, 256);
             var page = 0;
-            yield return ShowQueue(queueCode, page);
-        }
-
-        public IEnumerator Dismiss()
-        {
-            content.SetActive(false);
-            yield return null;
-        }
-
-        public IEnumerator ShowQueue(string queueCode, int page)
-        {
             if (string.IsNullOrEmpty(queueCode)) yield break;
 
             var nonce = Instance.WebAPIClient.GetTimestamp();
@@ -96,6 +111,16 @@ namespace Com.FurtherSystems.vQL.Client
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorManage>();
                 if (data.ResponseCode == ResponseCode.ResponseOk)
                 {
+                    Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
+                    Debug.Log("data.Name: " + data.Name);
+                    Debug.Log("data.QueingTotal: " + data.QueingTotal);
+                    Debug.Log("data.Total: " + data.Total);
+                    Debug.Log("data.Ticks:" + data.Ticks.ToString());
+                    vendorName.text = data.Name;
+                    queueCodeLabel.text = "行列コード: " + queueCode;
+                    queingTotalLabel.text = "行列人数: " + data.QueingTotal.ToString();
+                    TotalLabel.text = "総積算数: " + data.Total.ToString();
+
                     var index = 0;
                     foreach (var row in data.Rows)
                     {
@@ -160,7 +185,7 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator FadeVendorRegist()
         {
             yield return panelSwitcher.PopLoadingDialog();
-            yield return panelSwitcher.Fade(PanelType.VendorSetting);
+            yield return panelSwitcher.Fade(PanelType.VendorUpdate);
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
@@ -188,31 +213,6 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
-        public void CallFadeNewQueue()
-        {
-            StartCoroutine(NewQueue());
-        }
-
-        IEnumerator NewQueue()
-        {
-            yield return panelSwitcher.PopLoadingDialog();
-            var nonce = Instance.WebAPIClient.GetTimestamp();
-            var ticks = Instance.WebAPIClient.GetUnixTime();
-            yield return StartCoroutine(Instance.WebAPI.NewQueue(true, ticks, nonce));
-            if (Instance.WebAPI.Result)
-            {
-                var data = Instance.WebAPI.DequeueResultData<Messages.Response.NewQueue>();
-                var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
-                var vendorQueue = vendorQueueCode.Split(',')[0];
-                Storage.Save(Storage.Type.VendorQueueCode, vendorQueue + "," + data.QueueCode);
-            }
-            else
-            {
-                // error
-            }
-            yield return panelSwitcher.DepopLoadingDialog();
-        }
-
         public void CallFadeAddDummy()
         {
             StartCoroutine(AddDummy());
@@ -221,6 +221,8 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator AddDummy()
         {
             yield return panelSwitcher.PopLoadingDialog();
+            // AddDummy
+            yield return ShowQueue();
             yield return panelSwitcher.DepopLoadingDialog();
         }
     }

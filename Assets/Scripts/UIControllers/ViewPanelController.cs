@@ -31,6 +31,7 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         GameObject upgradeIcon;
 
+        bool isVendorAccount = false;
         PanelSwitcher panelSwitcher;
 
         public PanelType GetPanelType()
@@ -55,6 +56,8 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 yield return row.Initialize();
             }
+            isVendorAccount = Storage.Exists(Storage.Type.VendorQueueCode);
+
             yield return ShowVendors();
             yield return null;
         }
@@ -88,21 +91,27 @@ namespace Com.FurtherSystems.vQL.Client
             yield return null;
         }
 
-        public void CallFadeRegist()
+        public void CallFadeEnqueue()
         {
-            StartCoroutine(FadeRegist());
+            StartCoroutine(FadeEnqueue());
         }
 
-        IEnumerator FadeRegist()
+        IEnumerator FadeEnqueue()
         {
             yield return panelSwitcher.PopLoadingDialog();
             yield return panelSwitcher.Fade(PanelType.Enqueue);
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
-        public void CallFadeUpgrade()
+        public void CallFadeVendorManage()
         {
-            StartCoroutine(FadeUpgrade());
+            if (isVendorAccount)
+            {
+                StartCoroutine(FadeVendorManage());
+            } else
+            {
+                StartCoroutine(FadeUpgrade());
+            }
         }
 
         IEnumerator FadeUpgrade()
@@ -112,16 +121,9 @@ namespace Com.FurtherSystems.vQL.Client
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
-        public void CallFadeVendorManage()
-        {
-            StartCoroutine(FadeVendorManage());
-        }
-
         IEnumerator FadeVendorManage()
         {
             yield return panelSwitcher.PopLoadingDialog();
-            // if not regist?
-            //panelSwitcher.FadeRegist();
             yield return panelSwitcher.Fade(PanelType.VendorManage);
             yield return panelSwitcher.DepopLoadingDialog();
         }

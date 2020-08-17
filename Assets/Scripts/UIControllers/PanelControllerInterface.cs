@@ -21,7 +21,7 @@ namespace Com.FurtherSystems.vQL.Client
         View,
         Upgrade,
         Main,
-        VendorSetting,
+        VendorUpdate,
         VendorManage,
         VendorMain,
         SearchDialog,

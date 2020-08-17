@@ -33,7 +33,7 @@ namespace Com.FurtherSystems.vQL.Client
 
         public PanelType GetPanelType()
         {
-            return PanelType.VendorSetting;
+            return PanelType.VendorUpdate;
         }
 
         public void Initialize(PanelSwitcher switcher)
@@ -58,25 +58,68 @@ namespace Com.FurtherSystems.vQL.Client
             yield return null;
         }
 
-        public void CallSetVendor()
+        public void CallSubmitVendor()
         {
-            StartCoroutine(SetVendor());
+            if (Instance.Ident.VendorInitializingFlow)
+            {
+                StartCoroutine(UpgradeVendor());
+            }
+            else
+            {
+                StartCoroutine(UpdateVendor());
+            }
         }
 
-        IEnumerator SetVendor()
+        IEnumerator UpgradeVendor()
         {
             panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var (seed, ticks) = Instance.Ident.GetSeed();
-            yield return StartCoroutine(Instance.WebAPI.SetVendor(SetName.text, SetCaption.text, Instance.Ident.SessionId, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
+            var requireAdmit = false;
+            yield return StartCoroutine(Instance.WebAPI.UpgradeVendor(SetName.text, SetCaption.text, true, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorSetting>();
                 Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
                 Debug.Log("data.VendorCode: " + data.VendorCode);
+                Debug.Log("data.QueueCode: " + data.QueueCode);
                 Debug.Log("data.Ticks:" + data.Ticks.ToString());
+                Storage.Save(Storage.Type.VendorQueueCode, data.VendorCode + "," + data.QueueCode);
 
-                Storage.Save(Storage.Type.VendorQueueCode, data.VendorCode+",");
+                Instance.Ident.VendorInitializingFlow = false;
+                yield return panelSwitcher.Fade(PanelType.VendorManage);
+                yield return panelSwitcher.DepopLoadingDialog();
+            }
+            else
+            {
+                yield return panelSwitcher.PopErrorDialog();
+                yield return panelSwitcher.FadeBack();
+                yield return panelSwitcher.DepopLoadingDialog();
+            }
+        }
+
+        IEnumerator UpdateVendor()
+        {
+            panelSwitcher.PopLoadingDialog();
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var (seed, ticks) = Instance.Ident.GetSeed();
+            var requireInitQueue = false;
+            var requireAdmit = false;
+            yield return StartCoroutine(Instance.WebAPI.UpdateVendor(SetName.text, SetCaption.text, requireInitQueue, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                if (requireInitQueue)
+                {
+                    var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorSetting>();
+                    Debug.Log("data.ResponseCode: " + data.ResponseCode.ToString());
+                    Debug.Log("data.QueueCode: " + data.QueueCode);
+                    Debug.Log("data.Ticks:" + data.Ticks.ToString());
+                    var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
+                    var codeArray = vendorQueueCode.Split(',');
+                    var vendorCode = string.Empty;
+                    if (codeArray.Length > 0) vendorCode = codeArray[0];
+                    Storage.Save(Storage.Type.VendorQueueCode, vendorCode + "," + data.QueueCode);
+                }
 
                 yield return panelSwitcher.Fade(PanelType.VendorManage);
                 yield return panelSwitcher.DepopLoadingDialog();
@@ -84,6 +127,7 @@ namespace Com.FurtherSystems.vQL.Client
             else
             {
                 yield return panelSwitcher.PopErrorDialog();
+                yield return panelSwitcher.FadeBack();
                 yield return panelSwitcher.DepopLoadingDialog();
             }
         }
@@ -96,6 +140,7 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator FadeBack()
         {
             yield return panelSwitcher.PopLoadingDialog();
+            Instance.Ident.VendorInitializingFlow = false;
             yield return panelSwitcher.FadeBack();
             yield return panelSwitcher.DepopLoadingDialog();
         }

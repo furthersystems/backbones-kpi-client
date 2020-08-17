@@ -91,6 +91,8 @@ namespace Com.FurtherSystems.vQL.Client
             {
                 return GenerateHash(SystemInfo.deviceUniqueIdentifier, Storage.ServiceUniqueKey);
             }
+
+            public bool VendorInitializingFlow { get; set; } = false;
         }
     }
 }

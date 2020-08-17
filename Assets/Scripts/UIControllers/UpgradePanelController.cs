@@ -54,17 +54,16 @@ namespace Com.FurtherSystems.vQL.Client
             yield return null;
         }
 
-        public void CallFadeVendorManage()
+        public void CallFadeVendorUpgrade()
         {
-            StartCoroutine(FadeVendorManage());
+            StartCoroutine(FadeVendorUpgrade());
         }
 
-        IEnumerator FadeVendorManage()
+        IEnumerator FadeVendorUpgrade()
         {
             yield return panelSwitcher.PopLoadingDialog();
-            // if not regist?
-            //panelSwitcher.FadeRegist();
-            yield return panelSwitcher.Fade(PanelType.VendorManage);
+            Instance.Ident.VendorInitializingFlow = true;
+            yield return panelSwitcher.Fade(PanelType.VendorUpdate);
             yield return panelSwitcher.DepopLoadingDialog();
         }
 
