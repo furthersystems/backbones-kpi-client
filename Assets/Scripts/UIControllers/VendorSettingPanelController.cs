@@ -27,6 +27,10 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         Text SetCaption;
         [SerializeField]
+        Toggle RequireQueueInit;
+        [SerializeField]
+        Toggle RequireAdmit;
+        [SerializeField]
         GameObject content;
 
         PanelSwitcher panelSwitcher;
@@ -75,8 +79,9 @@ namespace Com.FurtherSystems.vQL.Client
             panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var (seed, ticks) = Instance.Ident.GetSeed();
-            var requireAdmit = false;
-            yield return StartCoroutine(Instance.WebAPI.UpgradeVendor(SetName.text, SetCaption.text, true, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
+            var requireQueueInit = RequireQueueInit.isOn;
+            var requireAdmit = RequireAdmit.isOn;
+            yield return StartCoroutine(Instance.WebAPI.UpgradeVendor(SetName.text, SetCaption.text, requireQueueInit, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorSetting>();
@@ -103,8 +108,8 @@ namespace Com.FurtherSystems.vQL.Client
             panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var (seed, ticks) = Instance.Ident.GetSeed();
-            var requireInitQueue = false;
-            var requireAdmit = false;
+            var requireInitQueue = RequireQueueInit.isOn;
+            var requireAdmit = RequireAdmit.isOn;
             yield return StartCoroutine(Instance.WebAPI.UpdateVendor(SetName.text, SetCaption.text, requireInitQueue, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
             if (Instance.WebAPI.Result)
             {
