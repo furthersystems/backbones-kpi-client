@@ -40,6 +40,8 @@ namespace Com.FurtherSystems.vQL.Client
         GameObject authCodeToPhoneSwitch;
 
         [SerializeField]
+        GameObject authCompleteImage;
+        [SerializeField]
         GameObject authCompleteLabel;
         [SerializeField]
         GameObject authCompleteCaption;
@@ -90,6 +92,7 @@ namespace Com.FurtherSystems.vQL.Client
             authCodeSubmit.SetActive(false);
             authCodeToPhoneSwitch.SetActive(false);
 
+            authCompleteImage.SetActive(false);
             authCompleteLabel.SetActive(false);
             authCompleteCaption.SetActive(false);
     }
@@ -107,6 +110,7 @@ namespace Com.FurtherSystems.vQL.Client
             authCodeSubmit.SetActive(true);
             authCodeToPhoneSwitch.SetActive(true);
 
+            authCompleteImage.SetActive(false);
             authCompleteLabel.SetActive(false);
             authCompleteCaption.SetActive(false);
         }
@@ -124,6 +128,7 @@ namespace Com.FurtherSystems.vQL.Client
             authCodeSubmit.SetActive(false);
             authCodeToPhoneSwitch.SetActive(false);
 
+            authCompleteImage.SetActive(true);
             authCompleteLabel.SetActive(true);
             authCompleteCaption.SetActive(true);
         }

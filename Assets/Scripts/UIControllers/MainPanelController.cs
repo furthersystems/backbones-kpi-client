@@ -117,13 +117,12 @@ namespace Com.FurtherSystems.vQL.Client
                 v.TotalWaiting = data.TotalWaiting;
                 Instance.Vendors.SetVendor(currentVendor.VendorCode, v);
 
-                Debug.Log("totalWaiting");
-
                 VendorName.text = data.Name;
 
                 var vendor = Instance.Vendors.GetVendor();
                 //queueLength.text = "行列人数: " + vendor.TotalWaiting;
                 //totalEnqueue.text = "総積算数: " + vendor.TotalWaiting;
+                var keyCodePrefix = int.Parse(vendor.KeyCodePrefix);
 
                 beforePersonText1.text = (vendor.PersonsWaitingBefore - 1).ToString();
                 beforePersonText2.text = (vendor.PersonsWaitingBefore).ToString();
@@ -134,6 +133,8 @@ namespace Com.FurtherSystems.vQL.Client
                 beforePersonIcon4.SetActive(false);
                 beforePersonIcon5.SetActive(false);
                 dotDot.SetActive(false);
+
+                Debug.Log("total waiting" + vendor.TotalWaiting.ToString());
 
                 if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 2)
                 {
@@ -147,7 +148,7 @@ namespace Com.FurtherSystems.vQL.Client
                     beforePersonIcon5.SetActive(true);
                     dotDot.SetActive(false);
                 }
-                else if (vendor.PersonsWaitingBefore > vendor.TotalWaiting + 3)
+                else if (vendor.PersonsWaitingBefore < vendor.TotalWaiting + 3)
                 {
                     beforePersonIcon4.SetActive(true);
                     beforePersonIcon5.SetActive(true);
@@ -160,7 +161,7 @@ namespace Com.FurtherSystems.vQL.Client
                     beforePersonIcon2.SetActive(true);
                     beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
 
-                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
+                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
                     keyCodeSuffix.text = "";
                 }
                 else if (vendor.PersonsWaitingBefore == 1)
@@ -168,16 +169,16 @@ namespace Com.FurtherSystems.vQL.Client
                     beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(true);
                     beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
-                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
+                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
                     keyCodeSuffix.text = "";
                 }
                 else
                 {
                     beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(false);
-                    beforePersons.text = "順番が来ました。\n以下のコードを提示してください。";
-                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
-                    keyCodeSuffix.text = vendor.KeyCodeSuffix.ToUpper();
+                    beforePersons.text = "順番が来ました。\n受付に入場用コードを提示してください。";
+                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
+                    keyCodeSuffix.text = "入場用コード\n<size=120>"+vendor.KeyCodeSuffix.ToUpper()+"</size>";
                 }
             }
             else

@@ -61,6 +61,8 @@ namespace Com.FurtherSystems.vQL.Client
         {
             content.SetActive(true);
             yield return ShowQueue();
+            yield return null;
+            StartCoroutine(ShowQueueInterval());
         }
 
         public IEnumerator Dismiss()
@@ -221,7 +223,45 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator AddDummy()
         {
             yield return panelSwitcher.PopLoadingDialog();
-            // AddDummy
+            var vendorQueueCode = Storage.Load(Storage.Type.VendorQueueCode);
+            var codeArray = vendorQueueCode.Split(',');
+            var vendorCode = string.Empty;
+            var queueCode = string.Empty;
+            if (codeArray.Length > 0) vendorCode = codeArray[0];
+            if (codeArray.Length > 1) queueCode = codeArray[1];
+
+            do
+            {
+
+                if (string.IsNullOrEmpty(vendorCode) || string.IsNullOrEmpty(queueCode)) break;
+
+                if (string.IsNullOrEmpty(queueCode)) break;
+
+                var nonce = Instance.WebAPIClient.GetTimestamp();
+                var ticks = Instance.WebAPIClient.GetUnixTime();
+                yield return StartCoroutine(Instance.WebAPI.VendorEnqueueUser(ticks, nonce));
+                if (Instance.WebAPI.Result)
+                {
+                    var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorManage>();
+                    if (data.ResponseCode == ResponseCode.ResponseOk)
+                    {
+                        // ok
+                    }
+                    else if (data.ResponseCode == ResponseCode.ResponseOkVendorRequireInitialize)
+                    {
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else
+                {
+                    // error
+                }
+
+                break;
+            } while (true);
             yield return ShowQueue();
             yield return panelSwitcher.DepopLoadingDialog();
         }
