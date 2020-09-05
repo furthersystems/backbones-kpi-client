@@ -35,13 +35,31 @@ namespace Com.FurtherSystems.vQL.Client
         [SerializeField]
         Text beforePersons;
         [SerializeField]
-        Text keyCodePrefix;
+        Text WaitInfo;
         [SerializeField]
         Text keyCodeSuffix;
         [SerializeField]
         GameObject beforePersonIcon1;
         [SerializeField]
         GameObject beforePersonIcon2;
+        [SerializeField]
+        GameObject beforePersonIcon3;
+        [SerializeField]
+        GameObject beforePersonIcon4;
+        [SerializeField]
+        GameObject beforePersonIcon5;
+        [SerializeField]
+        GameObject dotDot;
+        [SerializeField]
+        Text beforePersonText1;
+        [SerializeField]
+        Text beforePersonText2;
+        [SerializeField]
+        Text beforePersonText3;
+        [SerializeField]
+        Text beforePersonText4;
+        [SerializeField]
+        Text beforePersonText5;
 
         PanelSwitcher panelSwitcher;
         bool breakInterval = false;
@@ -87,7 +105,7 @@ namespace Com.FurtherSystems.vQL.Client
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var ticks = Instance.WebAPIClient.GetUnixTime();
             var currentVendor = Instance.Vendors.GetVendor();
-            yield return StartCoroutine(Instance.WebAPI.Get(currentVendor.VendorCode, currentVendor.QueueCode, ticks, nonce));
+            yield return StartCoroutine(Instance.WebAPI.GetQueue(currentVendor.VendorCode, currentVendor.QueueCode, ticks, nonce));
             if (Instance.WebAPI.Result)
             {
                 var data = Instance.WebAPI.DequeueResultData<Messages.Response.Queue>();
@@ -99,25 +117,58 @@ namespace Com.FurtherSystems.vQL.Client
                 v.TotalWaiting = data.TotalWaiting;
                 Instance.Vendors.SetVendor(currentVendor.VendorCode, v);
 
+                Debug.Log("totalWaiting");
+
                 VendorName.text = data.Name;
 
                 var vendor = Instance.Vendors.GetVendor();
                 //queueLength.text = "行列人数: " + vendor.TotalWaiting;
                 //totalEnqueue.text = "総積算数: " + vendor.TotalWaiting;
 
+                beforePersonText1.text = (vendor.PersonsWaitingBefore - 1).ToString();
+                beforePersonText2.text = (vendor.PersonsWaitingBefore).ToString();
+                beforePersonText3.text = (vendor.PersonsWaitingBefore + 1).ToString();
+                beforePersonText4.text = (vendor.PersonsWaitingBefore + 2).ToString();
+                beforePersonText5.text = (vendor.PersonsWaitingBefore + 3).ToString();
+
+                beforePersonIcon4.SetActive(false);
+                beforePersonIcon5.SetActive(false);
+                dotDot.SetActive(false);
+
+                if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 2)
+                {
+                    beforePersonIcon4.SetActive(true);
+                    beforePersonIcon5.SetActive(false);
+                    dotDot.SetActive(false);
+                }
+                else if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 3)
+                {
+                    beforePersonIcon4.SetActive(true);
+                    beforePersonIcon5.SetActive(true);
+                    dotDot.SetActive(false);
+                }
+                else if (vendor.PersonsWaitingBefore > vendor.TotalWaiting + 3)
+                {
+                    beforePersonIcon4.SetActive(true);
+                    beforePersonIcon5.SetActive(true);
+                    dotDot.SetActive(true);
+                }
+
                 if (vendor.PersonsWaitingBefore > 1)
                 {
                     beforePersonIcon1.SetActive(true);
                     beforePersonIcon2.SetActive(true);
-                    beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
-                    keyCodePrefix.text = "";
+                    beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
+
+                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
                     keyCodeSuffix.text = "";
                 }
                 else if (vendor.PersonsWaitingBefore == 1)
                 {
+                    beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(true);
-                    beforePersons.text = "\nあなたの前に" + vendor.PersonsWaitingBefore + "人並んでいます。";
-                    keyCodePrefix.text = "";
+                    beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
+                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
                     keyCodeSuffix.text = "";
                 }
                 else
@@ -125,7 +176,7 @@ namespace Com.FurtherSystems.vQL.Client
                     beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(false);
                     beforePersons.text = "順番が来ました。\n以下のコードを提示してください。";
-                    keyCodePrefix.text = vendor.KeyCodePrefix;
+                    WaitInfo.text = $"受付番号:002 総待ち人数:6000";
                     keyCodeSuffix.text = vendor.KeyCodeSuffix.ToUpper();
                 }
             }

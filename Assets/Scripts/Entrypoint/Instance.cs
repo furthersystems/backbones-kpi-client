@@ -10,10 +10,14 @@
 // Instance
 // </summary>
 //------------------------------------------------------------------------------
+using System;
+
 namespace Com.FurtherSystems.vQL.Client
 {
     public partial class Instance
     {
+        public static UInt16 ClientVersion = 1;
+        public static UInt16 AgreementVersion = 1;
         public static WebAPIClient WebAPI = null;
         public static Identifier Ident = null;
         public static VendorsInstance Vendors = null;

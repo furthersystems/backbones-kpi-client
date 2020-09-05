@@ -23,13 +23,25 @@ namespace Com.FurtherSystems.vQL.Client
     public class VendorSettingPanelController : MonoBehaviour, PanelControllerInterface
     {
         [SerializeField]
-        Text SetName;
+        InputField SetName;
         [SerializeField]
-        Text SetCaption;
+        InputField SetCaption;
         [SerializeField]
         Toggle RequireQueueInit;
         [SerializeField]
         Toggle RequireAdmit;
+
+        [SerializeField]
+        GameObject SwitchRequireQueueInitLabel;
+        [SerializeField]
+        GameObject SwitchRequireQueueInitCaption;
+        [SerializeField]
+        GameObject SwitchRequireQueueInitToggle;
+        [SerializeField]
+        GameObject SwitchRequireAdmitCaption;
+        [SerializeField]
+        GameObject SwitchRequireAdmitToggle;
+
         [SerializeField]
         GameObject content;
 
@@ -53,6 +65,37 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator Show()
         {
             content.SetActive(true);
+            if (Instance.Ident.VendorInitializingFlow)
+            {
+                SwitchRequireQueueInitLabel.SetActive(false);
+                SwitchRequireQueueInitCaption.SetActive(false);
+                SwitchRequireQueueInitToggle.SetActive(false);
+                //SwitchRequireAdmitCaption.SetActive(false);
+                //SwitchRequireAdmitToggle.SetActive(false);
+            }
+            else
+            {
+                SwitchRequireQueueInitLabel.SetActive(true);
+                SwitchRequireQueueInitCaption.SetActive(true);
+                SwitchRequireQueueInitToggle.SetActive(true);
+                //SwitchRequireAdmitCaption.SetActive(true);
+                //SwitchRequireAdmitToggle.SetActive(true);
+                var nonce = Instance.WebAPIClient.GetTimestamp();
+                var (seed, ticks) = Instance.Ident.GetSeed();
+                yield return StartCoroutine(Instance.WebAPI.GetVendor(ticks, nonce));
+                if (Instance.WebAPI.Result)
+                {
+                    var data = Instance.WebAPI.DequeueResultData<Messages.Response.VendorDetail>();
+                    Debug.Log("data.Name: " + data.Name);
+                    Debug.Log("data.Caption: " + data.Caption);
+                    SetName.text = data.Name;
+                    SetCaption.text = data.Caption;
+                }
+                else
+                {
+                    // error case
+                }
+            }
             yield return null;
         }
 
@@ -79,8 +122,8 @@ namespace Com.FurtherSystems.vQL.Client
             panelSwitcher.PopLoadingDialog();
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var (seed, ticks) = Instance.Ident.GetSeed();
-            var requireQueueInit = RequireQueueInit.isOn;
-            var requireAdmit = RequireAdmit.isOn;
+            var requireQueueInit = true;
+            var requireAdmit = false;
             yield return StartCoroutine(Instance.WebAPI.UpgradeVendor(SetName.text, SetCaption.text, requireQueueInit, requireAdmit, Instance.Ident.GetPlatformIdentifier(), ticks, nonce));
             if (Instance.WebAPI.Result)
             {

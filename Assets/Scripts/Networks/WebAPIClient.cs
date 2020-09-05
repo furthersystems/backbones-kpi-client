@@ -40,8 +40,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Put,
                 Delete,
             }
-
-            const string Url = "http://192.168.1.30:7000";
+            const string Url = "http://localhost:7000";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
 
@@ -59,7 +58,7 @@ namespace Com.FurtherSystems.vQL.Client
             public static string GetPlatform()
             {
 #if UNITY_STANDALONE_WIN
-                return "Windows";
+            return "Windows";
 #elif UNITY_STANDALONE_LINUX
             return "Linux";
 #elif UNITY_STANDALONE_OSX
@@ -149,13 +148,17 @@ namespace Com.FurtherSystems.vQL.Client
                 }
             }
 
-            public IEnumerator CreateAccount(string seed, string ident, long ticks, long nonce)
+            public IEnumerator CreateAccount(bool checkAgreement, UInt16 agreementVersion, Identifier.ActivateType activateType, string activateKeyword, string seed, string ident, long ticks, long nonce)
             {
                 Debug.Log("Create start");
                 clearResultData();
 
                 var reqBody = new Messages.Request.Create
                 {
+                    CheckAgreement = checkAgreement,
+                    AgreementVersion = agreementVersion,
+                    ActivateType = (byte)activateType,
+                    ActivateKeyword = activateKeyword,
                     IdentifierType = (byte)IdentifierType.None,
                     Identifier = ident,
                     Seed = seed,
@@ -194,9 +197,9 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Post, "/on/queue", reqBody, nonce);
             }
 
-            public IEnumerator Get(string vendorCode, string queueCode, long ticks, long nonce)
+            public IEnumerator GetQueue(string vendorCode, string queueCode, long ticks, long nonce)
             {
-                Debug.Log("Get start");
+                Debug.Log("GetQueue start");
                 clearResultData();
 
                 return Request(RequestType.Get, "/on/queue/"+ ToSafe(vendorCode) + "/"+ ToSafe(queueCode), null, nonce);
@@ -234,6 +237,14 @@ namespace Com.FurtherSystems.vQL.Client
                 };
 
                 return Request(RequestType.Post, "/on/vendor/update", reqBody, nonce);
+            }
+
+            public IEnumerator GetVendor(long ticks, long nonce)
+            {
+                Debug.Log("GetVendor start");
+                clearResultData();
+
+                return Request(RequestType.Get, "/on/vendor", null, nonce);
             }
 
             public IEnumerator VendorManage(string queueCode,int page, long ticks, long nonce)

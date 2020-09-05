@@ -45,7 +45,9 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator Show()
         {
             content.SetActive(true);
+            while (content.activeSelf) yield return new WaitForSeconds(0.5f);
             yield return null;
+
         }
 
         public IEnumerator Dismiss()
@@ -58,8 +60,16 @@ namespace Com.FurtherSystems.vQL.Client
         {
             if (IsShowing())
             {
-                var touch = TouchInfo.Get(0);
-                if (touch != TouchType.None) Dismiss();
+                if (Application.platform == RuntimePlatform.Android
+                    || Application.platform == RuntimePlatform.IPhonePlayer)
+                {
+                    var touch = TouchInfo.Get(0);
+                    if (touch != TouchType.None) StartCoroutine(Dismiss());
+                }
+                else
+                {
+                    if (Input.GetMouseButtonDown(0)) StartCoroutine(Dismiss());
+                }
             }
         }
     }

@@ -27,6 +27,9 @@ namespace Com.FurtherSystems.vQL.Client
         SearchDialog,
         LoadingDialog,
         ErrorDialog,
+        AuthDialog,
+        SubscribeDialog,
+        AgreementDialog,
         Fade,
     }
 

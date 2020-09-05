@@ -21,8 +21,41 @@ namespace Com.FurtherSystems.vQL.Client
     {
         public class Identifier
         {
+            public enum ActivateType : byte
+            {
+                PhoneAuth = 0,
+                EmailiAuth = 1,
+            }
             public Identifier()
             {
+            }
+
+            public UInt16 AgreementVersion { private set; get; } = 0;
+
+            public void SetAgreementVersion(UInt16 version)
+            {
+                AgreementVersion = version;
+            }
+
+            public bool CheckedAgreement { private set; get; } = false;
+
+            public void SetCheckedAgreement(bool flag)
+            {
+                CheckedAgreement = flag;
+            }
+            
+            public ActivateType CurrentActivateType { private set; get; } = 0;
+
+            public void SetActivateType(ActivateType activate)
+            {
+                CurrentActivateType = activate;
+            }
+
+            public string ActivateKeyword { private set; get; } = string.Empty;
+
+            public void SetActivateKeyword(string keyword)
+            {
+                ActivateKeyword = keyword;
             }
 
             public string SessionId { private set; get; } = "";

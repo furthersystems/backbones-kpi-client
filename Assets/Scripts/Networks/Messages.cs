@@ -27,6 +27,10 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
         {
 
         }
+        public bool CheckAgreement;
+        public UInt16 AgreementVersion;
+        public byte ActivateType;
+        public string ActivateKeyword;
         public byte IdentifierType;
         public string Identifier;
         public string Seed;
@@ -181,6 +185,17 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
         }
         public string VendorCode;
         public string QueueCode;
+    }
+
+    [Serializable]
+    public class VendorDetail : Base
+    {
+        public VendorDetail()
+        {
+
+        }
+        public string Name;
+        public string Caption;
     }
 
     [Serializable]

@@ -15,7 +15,6 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Com.FurtherSystems.vQL.Client
 {
@@ -31,6 +30,9 @@ namespace Com.FurtherSystems.vQL.Client
             PanelType.SearchDialog,
             PanelType.LoadingDialog,
             PanelType.ErrorDialog,
+            PanelType.AuthDialog,
+            PanelType.SubscribeDialog,
+            PanelType.AgreementDialog,
         };
         PanelType currentPanel;
         PanelType beforePanel;
@@ -106,6 +108,36 @@ namespace Com.FurtherSystems.vQL.Client
         public IEnumerator DepopErrorDialog()
         {
             yield return panels[PanelType.ErrorDialog].Dismiss();
+        }
+
+        public IEnumerator ModalAuthDialog()
+        {
+            yield return panels[PanelType.AuthDialog].Show();
+        }
+
+        public IEnumerator ModalSubscribeDialog()
+        {
+            yield return panels[PanelType.SubscribeDialog].Show();
+        }
+
+        public IEnumerator ModalAgreementDialog()
+        {
+            yield return panels[PanelType.AgreementDialog].Show();
+        }
+
+        public IEnumerator ProgressAuthDialog()
+        {
+            yield return panels[PanelType.AuthDialog].Dismiss();
+        }
+
+        public IEnumerator ProgressSubscribeDialog()
+        {
+            yield return panels[PanelType.SubscribeDialog].Dismiss();
+        }
+
+        public IEnumerator ProgressAgreementDialog()
+        {
+            yield return panels[PanelType.AgreementDialog].Dismiss();
         }
 
         IEnumerator AllDeactive()
