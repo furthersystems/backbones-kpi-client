@@ -60,6 +60,12 @@ namespace Com.FurtherSystems.vQL.Client
         Text beforePersonText4;
         [SerializeField]
         Text beforePersonText5;
+        [SerializeField]
+        GameObject cancelButton;
+        [SerializeField]
+        GameObject removeButton;
+
+        int keyCodePrefix = -1;
 
         PanelSwitcher panelSwitcher;
         bool breakInterval = false;
@@ -119,66 +125,96 @@ namespace Com.FurtherSystems.vQL.Client
 
                 VendorName.text = data.Name;
 
-                var vendor = Instance.Vendors.GetVendor();
-                //queueLength.text = "行列人数: " + vendor.TotalWaiting;
-                //totalEnqueue.text = "総積算数: " + vendor.TotalWaiting;
-                var keyCodePrefix = int.Parse(vendor.KeyCodePrefix);
-
-                beforePersonText1.text = (vendor.PersonsWaitingBefore - 1).ToString();
-                beforePersonText2.text = (vendor.PersonsWaitingBefore).ToString();
-                beforePersonText3.text = (vendor.PersonsWaitingBefore + 1).ToString();
-                beforePersonText4.text = (vendor.PersonsWaitingBefore + 2).ToString();
-                beforePersonText5.text = (vendor.PersonsWaitingBefore + 3).ToString();
-
-                beforePersonIcon4.SetActive(false);
-                beforePersonIcon5.SetActive(false);
-                dotDot.SetActive(false);
-
-                Debug.Log("total waiting" + vendor.TotalWaiting.ToString());
-
-                if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 2)
+                // enqueue
+                if (data.Status == 1)
                 {
-                    beforePersonIcon4.SetActive(true);
+                    cancelButton.SetActive(true);
+                    removeButton.SetActive(false);
+                    var vendor = Instance.Vendors.GetVendor();
+                    //queueLength.text = "行列人数: " + vendor.TotalWaiting;
+                    //totalEnqueue.text = "総積算数: " + vendor.TotalWaiting;
+                    keyCodePrefix = int.Parse(vendor.KeyCodePrefix);
+
+                    beforePersonText1.text = (vendor.PersonsWaitingBefore - 1).ToString();
+                    beforePersonText2.text = (vendor.PersonsWaitingBefore).ToString();
+                    beforePersonText3.text = (vendor.PersonsWaitingBefore + 1).ToString();
+                    beforePersonText4.text = (vendor.PersonsWaitingBefore + 2).ToString();
+                    beforePersonText5.text = (vendor.PersonsWaitingBefore + 3).ToString();
+
+                    beforePersonIcon4.SetActive(false);
                     beforePersonIcon5.SetActive(false);
                     dotDot.SetActive(false);
-                }
-                else if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 3)
-                {
-                    beforePersonIcon4.SetActive(true);
-                    beforePersonIcon5.SetActive(true);
-                    dotDot.SetActive(false);
-                }
-                else if (vendor.PersonsWaitingBefore < vendor.TotalWaiting + 3)
-                {
-                    beforePersonIcon4.SetActive(true);
-                    beforePersonIcon5.SetActive(true);
-                    dotDot.SetActive(true);
-                }
 
-                if (vendor.PersonsWaitingBefore > 1)
-                {
-                    beforePersonIcon1.SetActive(true);
-                    beforePersonIcon2.SetActive(true);
-                    beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
+                    Debug.Log("total waiting" + vendor.TotalWaiting.ToString());
 
-                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
-                    keyCodeSuffix.text = "";
+                    if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 2)
+                    {
+                        beforePersonIcon4.SetActive(true);
+                        beforePersonIcon5.SetActive(false);
+                        dotDot.SetActive(false);
+                    }
+                    else if (vendor.PersonsWaitingBefore == vendor.TotalWaiting + 3)
+                    {
+                        beforePersonIcon4.SetActive(true);
+                        beforePersonIcon5.SetActive(true);
+                        dotDot.SetActive(false);
+                    }
+                    else if (vendor.PersonsWaitingBefore < vendor.TotalWaiting + 3)
+                    {
+                        beforePersonIcon4.SetActive(true);
+                        beforePersonIcon5.SetActive(true);
+                        dotDot.SetActive(true);
+                    }
+
+                    if (vendor.PersonsWaitingBefore > 1)
+                    {
+                        beforePersonIcon1.SetActive(true);
+                        beforePersonIcon2.SetActive(true);
+                        beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
+
+                        WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
+                        keyCodeSuffix.text = "";
+                    }
+                    else if (vendor.PersonsWaitingBefore == 1)
+                    {
+                        beforePersonIcon1.SetActive(false);
+                        beforePersonIcon2.SetActive(true);
+                        beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
+                        WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
+                        keyCodeSuffix.text = "";
+                    }
+                    else
+                    {
+                        beforePersonIcon1.SetActive(false);
+                        beforePersonIcon2.SetActive(false);
+                        beforePersons.text = "順番が来ました。\n受付に入場用コードを提示してください。";
+                        WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
+                        keyCodeSuffix.text = "入場用コード\n<size=120>" + vendor.KeyCodeSuffix.ToUpper() + "</size>";
+                    }
                 }
-                else if (vendor.PersonsWaitingBefore == 1)
+                else if (data.Status == 2)
                 {
-                    beforePersonIcon1.SetActive(false);
-                    beforePersonIcon2.SetActive(true);
-                    beforePersons.text = $"\nあなたの順番は <size=30> {vendor.PersonsWaitingBefore + 1} </size> 番目です。";
-                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
-                    keyCodeSuffix.text = "";
-                }
-                else
-                {
+                    cancelButton.SetActive(false);
+                    removeButton.SetActive(true);
                     beforePersonIcon1.SetActive(false);
                     beforePersonIcon2.SetActive(false);
-                    beforePersons.text = "順番が来ました。\n受付に入場用コードを提示してください。";
-                    WaitInfo.text = $"受付番号:{keyCodePrefix:0000} 総待ち人数:{vendor.TotalWaiting}";
-                    keyCodeSuffix.text = "入場用コード\n<size=120>"+vendor.KeyCodeSuffix.ToUpper()+"</size>";
+                    beforePersonIcon3.SetActive(false);
+                    beforePersonIcon4.SetActive(false);
+                    beforePersonIcon5.SetActive(false);
+                    dotDot.SetActive(false);
+                    beforePersons.text = $"入場済みです。";
+                }
+                else if (data.Status == 3)
+                {
+                    cancelButton.SetActive(false);
+                    removeButton.SetActive(true);
+                    beforePersonIcon1.SetActive(false);
+                    beforePersonIcon2.SetActive(false);
+                    beforePersonIcon3.SetActive(false);
+                    beforePersonIcon4.SetActive(false);
+                    beforePersonIcon5.SetActive(false);
+                    dotDot.SetActive(false);
+                    beforePersons.text = $"キャンセル済みです。";
                 }
             }
             else
@@ -202,6 +238,76 @@ namespace Com.FurtherSystems.vQL.Client
         IEnumerator FadeView()
         {
             yield return panelSwitcher.PopLoadingDialog();
+            yield return panelSwitcher.Fade(PanelType.View);
+            yield return panelSwitcher.DepopLoadingDialog();
+        }
+
+        public void CallPass()
+        {
+            StartCoroutine(Pass());
+        }
+
+        IEnumerator Pass()
+        {
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            var currentVendor = Instance.Vendors.GetVendor();
+
+            if (keyCodePrefix < 0) yield break;
+
+            var strKeyCodePrefix = keyCodePrefix.ToString();
+            yield return StartCoroutine(Instance.WebAPI.Dequeue(currentVendor.VendorCode, currentVendor.QueueCode, strKeyCodePrefix, ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.Dequeue>();
+                if (data.Updated) Dismiss();
+                // error dialog
+            }
+            else
+            {
+                // error dialog
+            }
+            yield return null;
+        }
+
+        public void CallCancel()
+        {
+            StartCoroutine(Cancel());
+        }
+
+        IEnumerator Cancel()
+        {
+            var nonce = Instance.WebAPIClient.GetTimestamp();
+            var ticks = Instance.WebAPIClient.GetUnixTime();
+            var currentVendor = Instance.Vendors.GetVendor();
+
+            if (keyCodePrefix < 0) yield break;
+
+            var strKeyCodePrefix = keyCodePrefix.ToString();
+            yield return StartCoroutine(Instance.WebAPI.Cancel(currentVendor.VendorCode, currentVendor.QueueCode, strKeyCodePrefix, ticks, nonce));
+            if (Instance.WebAPI.Result)
+            {
+                var data = Instance.WebAPI.DequeueResultData<Messages.Response.Dequeue>();
+                if (data.Updated) Dismiss();
+                // error dialog
+            }
+            else
+            {
+                // error dialog
+            }
+            yield return null;
+        }
+
+        public void CallParge()
+        {
+            StartCoroutine(Parge());
+        }
+
+        IEnumerator Parge()
+        {
+            yield return panelSwitcher.PopLoadingDialog();
+            Instance.Vendors.PargeVendor(Instance.Vendors.GetVendor().VendorCode);
+
             yield return panelSwitcher.Fade(PanelType.View);
             yield return panelSwitcher.DepopLoadingDialog();
         }

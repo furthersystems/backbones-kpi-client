@@ -77,6 +77,7 @@ namespace Com.FurtherSystems.vQL.Client
         ResponseNgUserAlreadyPushOff = 703, // ng, user already push off.
         ResponseNgUserCannotPending = 704, // ng, this is end. cannot more pending.
         ResponseNgUserAlreadyCanceled = 705, // ng, already canceled by user.
+        ResponseNgUserAlreadyEnqueue = 706, // ng, already canceled by user.
         // UserDequeueAuth XX8XX
         ResponseNgUserCannotAuthDequeue = 800, // ng, dequeue auth not executed on time, dequeue auth failed.
         ResponseNgUserDequeueFailed = 801, // ng, dequeue failed.

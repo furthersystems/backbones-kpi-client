@@ -205,6 +205,38 @@ namespace Com.FurtherSystems.vQL.Client
                 return Request(RequestType.Get, "/on/queue/"+ ToSafe(vendorCode) + "/"+ ToSafe(queueCode), null, nonce);
             }
 
+            public IEnumerator Dequeue(string vendorCode, string queueCode, string keyCodePrefix, long ticks, long nonce)
+            {
+                Debug.Log("Dequeue start");
+                clearResultData();
+
+                var reqBody = new Messages.Request.Dequeue
+                {
+                    VendorCode = vendorCode,
+                    QueueCode = queueCode,
+                    KeyCodePrefix = keyCodePrefix,
+                    Ticks = ticks
+                };
+
+                return Request(RequestType.Post, "/on/dequeue", reqBody, nonce);
+            }
+
+            public IEnumerator Cancel(string vendorCode, string queueCode, string keyCodePrefix, long ticks, long nonce)
+            {
+                Debug.Log("Cancel start");
+                clearResultData();
+
+                var reqBody = new Messages.Request.Dequeue
+                {
+                    VendorCode = vendorCode,
+                    QueueCode = queueCode,
+                    KeyCodePrefix = keyCodePrefix,
+                    Ticks = ticks
+                };
+
+                return Request(RequestType.Post, "/on/cancel", reqBody, nonce);
+            }
+
             public IEnumerator UpgradeVendor(string name, string caption, bool requireInitQueue, bool requireAdmit, string ident, long ticks, long nonce)
             {
                 Debug.Log("UpgradeVendor start");

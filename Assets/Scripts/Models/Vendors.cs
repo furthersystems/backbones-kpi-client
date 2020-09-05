@@ -104,6 +104,33 @@ namespace Com.FurtherSystems.vQL.Client
             Storage.Save(Storage.Type.Vendors, jsoned);
         }
 
+        public void PargeVendor(string vendorCode)
+        {
+            if (instance.vendors.Length == 0)
+            {
+                return;
+            }
+            else if (instance.vendors.Length == 1)
+            {
+                instance = new Vendors();
+            }
+            else
+            {
+                var newVendors = new Vendor[instance.vendors.Length - 1];
+                int newIndex = 0;
+                for (int i = 0; i < instance.vendors.Length; i++)
+                {
+                    if (instance.vendors[i].VendorCode == vendorCode) continue;
+
+                    newVendors[newIndex] = instance.vendors[i];
+                    newIndex++;
+                }
+                instance.vendors = newVendors;
+            }
+            var jsoned = ToJson();
+            Storage.Save(Storage.Type.Vendors, jsoned);
+        }
+
         public Vendor GetVendor()
         {
             return GetVendor(instance.CurrentCode);

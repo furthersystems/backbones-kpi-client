@@ -65,6 +65,17 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
 
         }
     }
+    [Serializable]
+    public class Dequeue : Base
+    {
+        public Dequeue()
+        {
+
+        }
+        public string VendorCode;
+        public string QueueCode;
+        public string KeyCodePrefix;
+    }
 
     [Serializable]
     public class VendorSetting : Base
@@ -150,6 +161,16 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Response
         public int PersonsWaitingBefore;
         public int TotalWaiting;
         public int Status;
+    }
+
+    [Serializable]
+    public class Dequeue : Base
+    {
+        public Dequeue()
+        {
+
+        }
+        public bool Updated;
     }
 
     [Serializable]
