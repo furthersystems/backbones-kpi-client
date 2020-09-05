@@ -40,7 +40,7 @@ namespace Com.FurtherSystems.vQL.Client
                 Put,
                 Delete,
             }
-            const string Url = "http://192.168.1.33:7000";
+            const string Url = "http://localhost:7000";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
 
