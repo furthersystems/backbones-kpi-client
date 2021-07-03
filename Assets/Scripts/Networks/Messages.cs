@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 using System;
 
-namespace Com.FurtherSystems.vQL.Client.Messages.Request
+namespace Com.FurtherSystems.Backbones.KPI.Client.Messages.Request
 {
     [Serializable]
     public class Base
@@ -103,7 +103,7 @@ namespace Com.FurtherSystems.vQL.Client.Messages.Request
     }
 }
 
-namespace Com.FurtherSystems.vQL.Client.Messages.Response
+namespace Com.FurtherSystems.Backbones.KPI.Client.Messages.Response
 {
     [Serializable]
     public class Base

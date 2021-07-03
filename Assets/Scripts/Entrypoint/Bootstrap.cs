@@ -13,7 +13,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Com.FurtherSystems.vQL.Client
+namespace Com.FurtherSystems.Backbones.KPI.Client
 {
     public class Bootstrap : MonoBehaviour
     {

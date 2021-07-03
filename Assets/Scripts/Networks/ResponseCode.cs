@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 using System;
 
-namespace Com.FurtherSystems.vQL.Client
+namespace Com.FurtherSystems.Backbones.KPI.Client
 {
     public enum ResponseCode : Int16
     {

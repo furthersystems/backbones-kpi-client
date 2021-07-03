@@ -12,13 +12,10 @@
 //------------------------------------------------------------------------------
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Com.FurtherSystems.vQL.Client
+namespace Com.FurtherSystems.Backbones.KPI.Client
 {
     public partial class Instance
     {
@@ -38,9 +35,8 @@ namespace Com.FurtherSystems.vQL.Client
                 Put,
                 Delete,
             }
-            //const string Url = "https://s.srvs.cc:443";
-            const string Url = "http://192.168.1.38:9201";
-            const string UserAgent = "vQLClient Unity";
+            const string Url = "http://localhost:9201";
+            const string UserAgent = "FurtherSystemBackbons-KPI-Client Unity";
             const string ClientVersion = "v1.0.0";
 
             private static DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
