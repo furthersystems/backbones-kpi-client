@@ -10,8 +10,6 @@
 // vQL WebAPI Client
 // </summary>
 //------------------------------------------------------------------------------
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Paddings;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -40,11 +38,10 @@ namespace Com.FurtherSystems.vQL.Client
                 Put,
                 Delete,
             }
-            const string Url = "http://localhost:7000";
+            //const string Url = "https://s.srvs.cc:443";
+            const string Url = "http://192.168.1.38:9201";
             const string UserAgent = "vQLClient Unity";
             const string ClientVersion = "v1.0.0";
-
-            const string traditionalKey = "KIWIKIWIKIWIKIWIKIWIKIWIKIWIKIWI";
 
             private static DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
@@ -82,23 +79,6 @@ namespace Com.FurtherSystems.vQL.Client
                 return (long)elapsedTime.TotalSeconds;
             }
 
-            string Encode(object obj, long iv)
-            {
-                var postDataJsonBytes = Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
-                //Debug.Log("send json bytes: " + BitConverter.ToString(postDataJsonBytes));
-                //var encoded = new BouncyCastleWrapper(new AesEngine(), new Pkcs7Padding()).Encrypt(postDataJsonBytes, traditionalKey);
-                //Debug.Log("send encrypted bytes: " + BitConverter.ToString(encoded));
-                //Debug.Log("send base64 bytes: " + BitConverter.ToString(Encoding.UTF8.GetBytes(Convert.ToBase64String(encoded))));
-                return Convert.ToBase64String(postDataJsonBytes);
-            }
-
-            public T Decode<T>(string value, long iv)
-            {
-                var base64Decoded = Convert.FromBase64String(value);
-                var json = Encoding.UTF8.GetString(base64Decoded);
-                return JsonUtility.FromJson<T>(json);
-            }
-
             private string ToSafe(string base64str)
             {
                 return base64str.Replace('=', '-').Replace('+', '.').Replace('/', '_');
@@ -106,242 +86,44 @@ namespace Com.FurtherSystems.vQL.Client
 
             public bool Result { get; set; }
 
-            private class ResultData
+
+            public IEnumerator SendScheduled(long nonce)
             {
-                public string Data;
-                public long IV;
-                public ResultData(string data, long iv)
-                {
-                    Data = data;
-                    IV = iv;
-                }
+                Debug.Log("send start");
+                var reqBody = @"{
+  ""uuid"" : ""XXXX - XXXX - XXXX - XXXX - XXXX"",
+  ""timestamp"" : ""2021-09-16T10:00:00Z"",
+  ""typename"": ""scheduled send"",
+  ""location"": [141.3534235,43.0644717],
+  ""OS"": ""Windows"",
+  ""region"": ""Japan"",
+  ""GDPR"": ""yes""
+}";
+                return Request(RequestType.Post, "/flexent20210523/_doc/user", reqBody);
             }
 
-            ConcurrentQueue<ResultData> resultQueue = null;
-            public T DequeueResultData<T>()
+            private IEnumerator Request(RequestType type, string path, string postData)
             {
-                ResultData result = null;
-                Debug.Log("result data queue count: " + resultQueue.Count.ToString());
-                if (resultQueue.Count > 0)
-                {
-                    resultQueue.TryDequeue(out result);
-                }
-                // decode here.
-                return Decode<T>(result.Data, result.IV);
-            }
-
-            private void enqueueResultData(ResultData value)
-            {
-                resultQueue.Enqueue(value);
-            }
-
-            private void clearResultData()
-            {
-                if (resultQueue == null)
-                {
-                    resultQueue = new ConcurrentQueue<ResultData>();
-                }
-                ResultData result;
-                while (resultQueue.Count > 0)
-                {
-                    resultQueue.TryDequeue(out result);
-                }
-            }
-
-            public IEnumerator CreateAccount(bool checkAgreement, UInt16 agreementVersion, Identifier.ActivateType activateType, string activateKeyword, string seed, string ident, long ticks, long nonce)
-            {
-                Debug.Log("Create start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.Create
-                {
-                    CheckAgreement = checkAgreement,
-                    AgreementVersion = agreementVersion,
-                    ActivateType = (byte)activateType,
-                    ActivateKeyword = activateKeyword,
-                    IdentifierType = (byte)IdentifierType.None,
-                    Identifier = ident,
-                    Seed = seed,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/new", reqBody, nonce);
-            }
-
-            public IEnumerator Logon(string privateCode, long ticks, long nonce)
-            {
-                Debug.Log("Logon start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.Logon
-                {
-                    PrivateCode = privateCode,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/logon", reqBody, nonce);
-            }
-
-            public IEnumerator Enqueue(string vendorCode, string queueCode, long ticks, long nonce)
-            {
-                Debug.Log("Enqueue start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.Enqueue
-                {
-                    VendorCode = vendorCode,
-                    QueueCode = queueCode,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/queue", reqBody, nonce);
-            }
-
-            public IEnumerator GetQueue(string vendorCode, string queueCode, long ticks, long nonce)
-            {
-                Debug.Log("GetQueue start");
-                clearResultData();
-
-                return Request(RequestType.Get, "/on/queue/"+ ToSafe(vendorCode) + "/"+ ToSafe(queueCode), null, nonce);
-            }
-
-            public IEnumerator Dequeue(string vendorCode, string queueCode, string keyCodePrefix, long ticks, long nonce)
-            {
-                Debug.Log("Dequeue start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.Dequeue
-                {
-                    VendorCode = vendorCode,
-                    QueueCode = queueCode,
-                    KeyCodePrefix = keyCodePrefix,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/dequeue", reqBody, nonce);
-            }
-
-            public IEnumerator Cancel(string vendorCode, string queueCode, string keyCodePrefix, long ticks, long nonce)
-            {
-                Debug.Log("Cancel start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.Dequeue
-                {
-                    VendorCode = vendorCode,
-                    QueueCode = queueCode,
-                    KeyCodePrefix = keyCodePrefix,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/cancel", reqBody, nonce);
-            }
-
-            public IEnumerator UpgradeVendor(string name, string caption, bool requireInitQueue, bool requireAdmit, string ident, long ticks, long nonce)
-            {
-                Debug.Log("UpgradeVendor start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.VendorSetting
-                {
-                    Name = name,
-                    Caption = caption,
-                    RequireInitQueue = requireInitQueue,
-                    RequireAdmit = requireAdmit,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/vendor/upgrade", reqBody, nonce);
-            }
-
-            public IEnumerator UpdateVendor(string name, string caption, bool requireInitQueue, bool requireAdmit, string ident, long ticks, long nonce)
-            {
-                Debug.Log("UpdateVendor start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.VendorSetting
-                {
-                    Name = name,
-                    Caption = caption,
-                    RequireInitQueue = requireInitQueue,
-                    RequireAdmit = requireAdmit,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/vendor/update", reqBody, nonce);
-            }
-
-            public IEnumerator GetVendor(long ticks, long nonce)
-            {
-                Debug.Log("GetVendor start");
-                clearResultData();
-
-                return Request(RequestType.Get, "/on/vendor", null, nonce);
-            }
-
-            public IEnumerator VendorManage(string queueCode,int page, long ticks, long nonce)
-            {
-                Debug.Log("VendorManage start");
-                clearResultData();
-                if (!string.IsNullOrEmpty(queueCode))
-                {
-                    queueCode = ToSafe(queueCode);
-                }
-                return Request(RequestType.Get, "/on/vendor/manage/" + queueCode +"/"+page.ToString(), null, nonce);
-            }
-
-            public IEnumerator VendorDequeue(string keyCodePrefix, string keyCodeSuffix, bool force, long ticks, long nonce)
-            {
-                Debug.Log("VendorDequeue start");
-                clearResultData();
-
-                var reqBody = new Messages.Request.VendorDequeue
-                {
-                    Force = force,
-                    KeyCodePrefix = keyCodePrefix,
-                    KeyCodeSuffix = keyCodeSuffix,
-                    Ticks = ticks
-                };
-
-                return Request(RequestType.Post, "/on/vendor/dequeue", reqBody, nonce);
-            }
-
-            public IEnumerator VendorShowQueue(string queueCode, int page, long ticks, long nonce)
-            {
-                Debug.Log("VendorShowQueue start");
-                clearResultData();
-                if (!string.IsNullOrEmpty(queueCode))
-                {
-                    queueCode = ToSafe(queueCode);
-                }
-                return Request(RequestType.Get, "/on/vendor/queue/" + queueCode + "/" + page.ToString(), null, nonce);
-            }
-
-            public IEnumerator VendorEnqueueUser(long ticks, long nonce)
-            {
-                Debug.Log("VendorEnqueueUser start");
-                return Request(RequestType.Post, "/on/vendor/queue/dummy", null, nonce);
-            }
-
-            private IEnumerator Request(RequestType type, string path, object postData, long nonce)
-            {
-
                 Debug.Log(path + " start");
-                clearResultData();
-                
                 UnityWebRequest req;
                 var counter = 1;
                 do
                 {
+                    Debug.Log("url"+Url + path);
+                    Debug.Log("reqbody" + postData);
+                    byte[] pdata = System.Text.Encoding.UTF8.GetBytes(postData);
                     var timer = 0f;
                     long ivReq = 0;
                     if (type == RequestType.Post)
                     {
-                        req = UnityWebRequest.Post(Url + path, Encode(postData, ivReq));
+                        //req = UnityWebRequest.Post(Url + path, Encode(postData, ivReq));
+                        //req = UnityWebRequest.Post(Url + path, postData);
+                        req = new UnityWebRequest(Url + path);
                     }
                     else if (type == RequestType.Put)
                     {
-                        req = UnityWebRequest.Put(Url + path, Encode(postData, ivReq));
+                        //req = UnityWebRequest.Put(Url + path, Encode(postData, ivReq));
+                        req = UnityWebRequest.Put(Url + path, postData);
                     }
                     else if (type == RequestType.Delete)
                     {
@@ -356,12 +138,10 @@ namespace Com.FurtherSystems.vQL.Client
                         req = UnityWebRequest.Get(Url + path);
                     }
                     req.SetRequestHeader("User-Agent", UserAgent + " " + ClientVersion);
-                    req.SetRequestHeader("Platform", GetPlatform());
-                    req.SetRequestHeader("Nonce", nonce.ToString());
-                    req.SetRequestHeader("IV", ivReq.ToString());
-                    req.SetRequestHeader("Session", Ident.SessionId);
-                    req.SetRequestHeader("Hash", Ident.GenerateHash(Ident.SessionPrivate + nonce.ToString(), Storage.ServiceUniqueKey));
-                    
+                    req.SetRequestHeader("Content-Type", "application/json");
+                    req.uploadHandler = (UploadHandler)new UploadHandlerRaw(pdata);
+                    req.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+                    req.timeout = 10;
                     req.SendWebRequest();
                     while (true)
                     {
@@ -398,7 +178,8 @@ namespace Com.FurtherSystems.vQL.Client
                     yield break;
                 }
                 long ivRes = 0;
-                enqueueResultData(new ResultData(req.downloadHandler.text, ivRes));
+                Debug.Log("result"+req.downloadHandler.text);
+                //enqueueResultData(new ResultData(req.downloadHandler.text, ivRes));
                 if (req.responseCode != 200)
                 {
                     Debug.Log("http status code:" + req.responseCode);

@@ -72,43 +72,6 @@ namespace Com.FurtherSystems.vQL.Client
                 SessionPrivate = sessionPrivate;
             }
 
-            public void SetPrivateCode(string priv)
-            {
-                Storage.Save(Storage.Type.PrivateCode, priv);
-            }
-
-            public string GetPrivateKey()
-            {
-                return Storage.Load(Storage.Type.PrivateCode);
-            }
-
-            public (string, long) GetSeed()
-            {
-                var saveSeed = Storage.Load(Storage.Type.Seed);
-                Debug.Log(saveSeed);
-                var seed = saveSeed.Split(',')[0];
-                long originTicks = 0;
-                long.TryParse(saveSeed.Split(',')[1], out originTicks);
-                return (seed, originTicks);
-            }
-
-            public (string, long) CreateSeed(string platform, long ticks)
-            {
-                Debug.Log(GetPlatformIdentifier() + " " + platform + " " + ticks.ToString() + "," + Storage.ServiceUniqueKey);
-                string saveSeed = GenerateHash(GetPlatformIdentifier() + platform + ticks.ToString(), Storage.ServiceUniqueKey) + "," + ticks.ToString();
-                Storage.Save(Storage.Type.Seed, saveSeed);
-
-                var seed = saveSeed.Split(',')[0];
-                long originTicks = 0;
-                long.TryParse(saveSeed.Split(',')[1], out originTicks);
-                return (seed, ticks);
-            }
-
-            public string AddNonce(string seed, long nonce)
-            {
-                Debug.Log(seed + " " + nonce.ToString() + "," + Storage.ServiceUniqueKey);
-                return GenerateHash(seed + nonce.ToString(), Storage.ServiceUniqueKey);
-            }
 
             public string GenerateHash(string plane, string key)
             {
@@ -120,10 +83,6 @@ namespace Com.FurtherSystems.vQL.Client
                 return BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLower();
             }
 
-            public string GetPlatformIdentifier()
-            {
-                return GenerateHash(SystemInfo.deviceUniqueIdentifier, Storage.ServiceUniqueKey);
-            }
 
             public bool VendorInitializingFlow { get; set; } = false;
         }
