@@ -24,18 +24,27 @@ namespace Com.FurtherSystems.Backbones.KPI.Client
             var nonce = Instance.WebAPIClient.GetTimestamp();
             var seed = string.Empty;
             var priv = string.Empty;
-            yield return StartCoroutine(Instance.WebAPI.SendScheduled(nonce));
+            yield return StartCoroutine(Instance.WebAPI.CreateScheduled(nonce));
             if (!Instance.WebAPI.Result)
             {
-                // TODO error dialog here & exit
-                Debug.Log("logon failed.");
-                // TODO error dialog
+                Debug.Log("send failed.");
                 yield return new WaitForSeconds(3.1f);
 
             }
-            //var data = Instance.WebAPI.DequeueResultData<string>();
-            //Debug.Log("result: " + data);
-            Debug.Log("private key created.");
+            yield return StartCoroutine(Instance.WebAPI.SendScheduled(nonce));
+            if (!Instance.WebAPI.Result)
+            {
+                Debug.Log("send failed.");
+                yield return new WaitForSeconds(3.1f);
+
+            }
+            yield return StartCoroutine(Instance.WebAPI.SearchScheduled(nonce));
+            if (!Instance.WebAPI.Result)
+            {
+                Debug.Log("send failed.");
+                yield return new WaitForSeconds(3.1f);
+
+            }
 
         }
     }

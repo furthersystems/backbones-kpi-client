@@ -35,7 +35,7 @@ namespace Com.FurtherSystems.Backbones.KPI.Client
                 Put,
                 Delete,
             }
-            const string Url = "http://localhost:9201";
+            const string Url = "http://localhost:9200";
             const string UserAgent = "Backbons-KPI-Unity-Client";
             const string ClientVersion = "v1.0.0";
 
@@ -82,6 +82,12 @@ namespace Com.FurtherSystems.Backbones.KPI.Client
 
             public bool Result { get; set; }
 
+           public IEnumerator CreateScheduled(long nonce)
+            {
+                Debug.Log("create start");
+                var reqBody = "{}";
+                return Request(RequestType.Put, "/index20210523/_doc/user?pretty", reqBody);
+            }
 
             public IEnumerator SendScheduled(long nonce)
             {
@@ -95,7 +101,14 @@ namespace Com.FurtherSystems.Backbones.KPI.Client
   ""region"": ""Japan"",
   ""GDPR"": ""yes""
 }";
-                return Request(RequestType.Post, "/flexent20210523/_doc/user", reqBody);
+                return Request(RequestType.Put, "/index20210523/_doc/user?pretty", reqBody);
+            }
+
+            public IEnumerator SearchScheduled(long nonce)
+            {
+                Debug.Log("search start");
+                var reqBody = "{}";
+                return Request(RequestType.Get, "/index20210523/_search?pretty", reqBody);
             }
 
             private IEnumerator Request(RequestType type, string path, string postData)
