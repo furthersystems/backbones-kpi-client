@@ -36,7 +36,7 @@ namespace Com.FurtherSystems.Backbones.KPI.Client
                 Delete,
             }
             const string Url = "http://localhost:9201";
-            const string UserAgent = "FurtherSystemBackbons-KPI-Client Unity";
+            const string UserAgent = "Backbons-KPI-Unity-Client";
             const string ClientVersion = "v1.0.0";
 
             private static DateTime UNIX_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
